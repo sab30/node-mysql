@@ -1,0 +1,38 @@
+{
+    "localhost" :{
+        "host"     : "localhost",
+        "user"     : "root",
+        "password" : "root",
+        "database" : "mypulse"
+    },
+    "localhostReplica" :{
+        "host"     : "localhost",
+        "user"     : "root",
+        "password" : "root",
+        "database" : "mypulse"
+    },
+    "stage" :{
+        "host"     : "localhost",
+        "user"     : "me",
+        "password" : "secret",
+        "database" : "my_db"
+    },
+    "stageReplica" :{
+        "host"     : "localhost",
+        "user"     : "me",
+        "password" : "secret",
+        "database" : "my_db"
+    },
+    "prod" :{
+        "host"     : "localhost",
+        "user"     : "me",
+        "password" : "secret",
+        "database" : "my_db"
+    },
+    "prodReplica" :{
+        "host"     : "localhost",
+        "user"     : "me",
+        "password" : "secret",
+        "database" : "my_db"
+    }
+}
