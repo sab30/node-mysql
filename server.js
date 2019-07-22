@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression')
 // const connectDB = require('./config/db');
 
 
@@ -9,6 +10,7 @@ const app = express();
 // connectDB();
 
 // Init Body parser via express midleware
+app.use(compression())
 app.use(express.json({ extended : false }));
  
 // If no port is set by default the port would be 5000

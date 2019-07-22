@@ -10,25 +10,42 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 var crud = require('../../config/crud');
-// var con = db.getConnection(); // re-uses existing if already created or creates new one
-// var conReplica = db.getConnectionReplica();
-// var db = require('./db');
-// var conn = db.getConnection(); // re-uses existing if already created or creates new one
-// var connReplica = db.getConnectionReplica();
+
 // @route  GET api/users
 // @desc   Test Route
 // @access Public
+//https://github.com/sidorares/node-mysql2/blob/master/examples/promise-co-await/await.js
 var db = require('../../config/db');
 var pool = db.getConnection();
 router.get('/', async (req,res) => {
 
     try {
-        const [rows, fields] = await pool.execute('select 1+1');
+        const data= await pool.execute('select * from test where id =1;');
         console.log(rows);
-        res.send(rows);
-      } catch (e) {
+        
+        // const data2= await pool.execute('select * from test where id =2;');
+        // console.log(rows2);
+        res.send({'q' : data['rows']});
+        // res.send({'q' : rows});
+    } catch (e) {
         console.log('caught exception!', e);
-      }
+    }
+
+    // try{
+    //     let [data1, data2]= await Promise.all([
+    //         pool.query('select * from test where id=1'),
+    //         pool.query('select * from test where id=2')
+    //     ]);
+    //     console.log(data1.rows);
+    //     console.log(data2.rows);
+    //     return res.send({data1 : data1.rows});
+    // } catch (e) {
+    //     console.log('caught exception!', e);
+    // }
+
+
+        
+
 
 
     // pool.getConnection((err, db) => {
