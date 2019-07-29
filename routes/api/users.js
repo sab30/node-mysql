@@ -132,10 +132,8 @@ router.get('/', async (req,res) => {
             longitude,
             latitude} = req.body;
 
-            
         try {
             // Check user already exists
-            
             const [rows, fields]= await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
                 user_email,
                 user_mobile,
@@ -150,7 +148,7 @@ router.get('/', async (req,res) => {
             // Create the user
             let values = {
                 user_name : user_name ? user_name: null,
-                user_unique_id : user_unique_id ? user_unique_id: null,
+                user_unique_id : user_unique_id ? user_unique_id: 'test',
                 user_first_name : user_first_name ? user_first_name: null,
                 user_last_name : user_last_name ? user_last_name: null,
                 user_gender : user_gender ? user_gender: null,
@@ -163,11 +161,12 @@ router.get('/', async (req,res) => {
                 created_by : 99
             };
             let sql= pool.format(`insert into users SET ? `, values);
-            const [error, results]= await pool.execute(sql);
-                console.log(error);
-                if (error)  throw error;
-                console.log(results);
-                console.log(results.insertId);
+            const [results]= await pool.execute(sql);
+            if(results){
+                res.send({results :{ user_id : results.insertId } });
+            }else{
+                return res.status(400).json({errors : 'Unable to create user'});
+            }
         } catch (error) {
             console.log(error);
             return res.status(400).json({errors : error});
