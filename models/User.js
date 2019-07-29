@@ -3,6 +3,30 @@ var conn = db.getConnection(); // re-uses existing if already created or creates
 var connReplica = db.getConnectionReplica();
 
 module.exports = {
+
+/**
+     * Pool Connection 
+     * Connection has to be released after aquiring the pool
+     */
+    createUser: function(query , req , callback){
+        console.log('User Model');
+        console.log(query);
+        conn.getConnection((err, connection) => {
+            if(err){
+                console.error(err);
+                callback(err, null);
+            }
+            connection.query(query, function(err, rows) {
+                if (connection) connection.release();
+                if(err){
+                    console.error(err);
+                    callback(err, null);
+                }
+                callback(err, rows);
+            });
+        });
+    },
+
     /**
      * Pool Connection 
      * Connection has to be released after aquiring the pool
@@ -11,7 +35,6 @@ module.exports = {
         console.log('User Model');
         console.log(query);
         conn.getConnection((err, connection) => {
-            console.log('Connection %d acquired', connection.threadId);
             if(err){
                 console.error(err);
                 callback(err, null);

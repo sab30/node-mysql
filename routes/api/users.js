@@ -9,14 +9,19 @@ const bcrypt = require('bcryptjs');
 // Import UserModel
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
-var crud = require('../../config/crud');
+var md5 = require('md5');
 
 // @route  GET api/users
 // @desc   Test Route
 // @access Public
 //https://github.com/sidorares/node-mysql2/blob/master/examples/promise-co-await/await.js
 var db = require('../../config/db');
+
 var pool = db.getConnection();
+var poolReplica = db.getConnectionReplica();
+
+
+  
 router.get('/', async (req,res) => {
 
     try {
@@ -84,10 +89,96 @@ router.get('/', async (req,res) => {
 //     res.send('User Route');
 // })
 
+  /**
+     * Creates a User or Registration
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} / Create or Register a User
+     * @apiName 		Register a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
+     *
+     * @apiPermission 	None
+     * @access Public
+     * */
+
+    router.post('/createUser',[
+        check('user_name' , 'Name is required').not().isEmpty(),
+        check('user_email' , 'Please include a valid email').isEmail(),
+        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
+            min:6
+        })
+    ], async (req,res) =>{ 
+
+        const errors= validationResult(req);
+
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+    
+        // Check User Exists
+        let {user_email , user_password, user_mobile ,
+            user_name,
+            user_unique_id,
+            user_first_name,
+            user_last_name,
+            user_gender,
+            user_dob,
+            user_area_id,
+            longitude,
+            latitude} = req.body;
+
+            
+        try {
+            // Check user already exists
+            
+            const [rows, fields]= await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
+                user_email,
+                user_mobile,
+                user_password
+            ]);
+            // res.send({results : rows });
+            if(rows.length > 0){
+                // User already exists
+                return res.status(400).json({errors : [ { message : 'User already exist'}]});
+            }
+            // console.log(md5(user_password + config.get('passwordHash')));
+            // Create the user
+            let values = {
+                user_name : user_name ? user_name: null,
+                user_unique_id : user_unique_id ? user_unique_id: null,
+                user_first_name : user_first_name ? user_first_name: null,
+                user_last_name : user_last_name ? user_last_name: null,
+                user_gender : user_gender ? user_gender: null,
+                user_dob : user_dob ? user_dob: null,
+                user_area_id : user_area_id ? user_area_id: null,
+                latitude : latitude ? latitude: null,
+                longitude : longitude ? longitude: null,
+                user_password  : md5(user_password + config.get('passwordHash')),
+                user_email : user_email,
+                created_by : 99
+            };
+            let sql= pool.format(`insert into users SET ? `, values);
+            const [error, results]= await pool.execute(sql);
+                console.log(error);
+                if (error)  throw error;
+                console.log(results);
+                console.log(results.insertId);
+        } catch (error) {
+            console.log(error);
+            return res.status(400).json({errors : error});
+        }
+    }
+    )
+
 router.post('/',[
-    check('name' , 'Name is required').not().isEmpty(),
-    check('email' , 'Please include a valid email').isEmail(),
-    check('password' , 'Please enter a password with 6 or more chrachters').isLength({
+    check('user_name' , 'Name is required').not().isEmpty(),
+    check('user_email' , 'Please include a valid email').isEmail(),
+    check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
         min:6
     })
 ], async (req,res) =>{ 

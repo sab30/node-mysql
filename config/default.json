@@ -3,13 +3,13 @@
         "host"     : "localhost",
         "user"     : "root",
         "password" : "root",
-        "database" : "mypulse"
+        "database" : "mypulse_node"
     },
     "localhostReplica" :{
         "host"     : "localhost",
         "user"     : "root",
         "password" : "root",
-        "database" : "mypulse"
+        "database" : "mypulse_node"
     },
     "stage" :{
         "host"     : "localhost",
@@ -34,5 +34,6 @@
         "user"     : "me",
         "password" : "secret",
         "database" : "my_db"
-    }
+    },
+    "passwordHash":"~!Q@#%$s1zT"
 }
