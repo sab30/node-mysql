@@ -100,6 +100,7 @@ router.get('/', async (req,res) => {
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
+     *                  
      *
      * @apiPermission 	None
      * @access Public
@@ -128,10 +129,18 @@ router.get('/', async (req,res) => {
             user_last_name,
             user_gender,
             user_dob,
-            user_area_id,
             longitude,
-            latitude} = req.body;
-
+            latitude,
+            address,
+            aadhar,
+            qualification,
+            profession,
+            specializations,
+            owner_name,
+            owner_mobile,
+            experience,
+            user_role
+        } = req.body;
         try {
             // Check user already exists
             const [rows, fields]= await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
@@ -145,25 +154,86 @@ router.get('/', async (req,res) => {
                 return res.status(400).json({errors : [ { message : 'User already exist'}]});
             }
             // console.log(md5(user_password + config.get('passwordHash')));
+            // get last unique ID
+            try {
+                const [rows, fields] = await pool.query(`select user_unique_id from users 
+                where user_role=? order by id desc limit 1`,
+                [ user_role ]);
+
+                if(!errors.isEmpty()){
+                    return res.status(400).json({errors : errors.array()});
+                }
+                if(rows.length > 0){
+                    user_unique_id=  parseInt(rows[0].user_unique_id.split('_')[1]) + 1;
+                }else{
+                    user_unique_id=  config.get('uniqueStartNumber') + 1;
+                }
+              } catch (e) {
+                  console.error(e);
+                return res.status(500).json({errors : 'Internal server error'});
+              }
+              console.log(user_unique_id);
+              console.log(config.get('uniqueCodePrefix')[user_role] +  user_unique_id.toString());
+
+
+              user_unique_id = config.get('uniqueCodePrefix')[user_role] +  user_unique_id.toString()
             // Create the user
+
             let values = {
                 user_name : user_name ? user_name: null,
-                user_unique_id : user_unique_id ? user_unique_id: 'test',
+                user_unique_id : user_unique_id,
                 user_first_name : user_first_name ? user_first_name: null,
                 user_last_name : user_last_name ? user_last_name: null,
                 user_gender : user_gender ? user_gender: null,
                 user_dob : user_dob ? user_dob: null,
-                user_area_id : user_area_id ? user_area_id: null,
                 latitude : latitude ? latitude: null,
                 longitude : longitude ? longitude: null,
                 user_password  : md5(user_password + config.get('passwordHash')),
                 user_email : user_email,
-                created_by : 99
+                created_by : 99,
+                address : address ? address : '',
+                aadhar : aadhar ? aadhar : null,
+                qualification : qualification ? qualification : null,
+                profession : profession ? profession : null,
+                specializations : specializations ? specializations : null,
+                owner_name : owner_name ? owner_name : null,
+                owner_mobile : owner_mobile ? owner_mobile : null,
+                experience : experience ? experience : null,
+                user_role : user_role ? user_role : null,
             };
             let sql= pool.format(`insert into users SET ? `, values);
+
             const [results]= await pool.execute(sql);
             if(results){
-                res.send({results :{ user_id : results.insertId } });
+
+                //Send Email 
+                
+                let nodemailer = require('nodemailer');
+                let smtpTransport = require('nodemailer-smtp-transport');
+
+                let transporter = nodemailer.createTransport(smtpTransport(config.get('smtp')));
+
+                let mailOptions = { 
+                    from: config.get('smtpFrom'), 
+                    to: user_email, 
+                    subject: 'Activate your MyPulse Account',
+                    html: `<b>Dear User<b>`+
+                    `<br />`
+                    +
+                    `Your ID is : ` + user_unique_id +
+                    `<br />
+                    Thanks for registering with MyPulse. Please click this button to complete your registration.`
+                    };
+
+                transporter.sendMail(mailOptions, function(error, info){ 
+                    if (error) {
+                        return res.status(400).json({errors : 'Unable to send email to user'});
+                    } else {
+                        res.send({results :{ user_id : results.insertId } });
+                    }
+                });  
+            
+                // Send SMS,
             }else{
                 return res.status(400).json({errors : 'Unable to create user'});
             }
@@ -173,6 +243,7 @@ router.get('/', async (req,res) => {
         }
     }
     )
+
 
 router.post('/',[
     check('user_name' , 'Name is required').not().isEmpty(),
@@ -214,9 +285,9 @@ router.post('/',[
 
     // Encrypt password with bcrypt
 
-    const salt = await bcrypt.genSalt(10);
+    //const salt = await bcrypt.genSalt(10);
 
-    user.password  = await bcrypt.hash(password,salt);
+    // user.password  = await bcrypt.hash(password,salt);
     // Will Return a Promise 
     await user.save();
 

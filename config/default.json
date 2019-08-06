@@ -35,5 +35,27 @@
         "password" : "secret",
         "database" : "my_db"
     },
-    "passwordHash":"~!Q@#%$s1zT"
+    "passwordHash":"~!Q@#%$s1zT",
+
+    "smtp": {
+        "service": "gmail",
+        "host": "smtp.gmail.com",
+        "auth": {
+            "user": "sabarishkashyap567@gmail.com",
+            "pass": "97395515870"   
+        }
+    },
+    "smtpFrom":"sabarishkashyap567@gmail.com",
+    "uniqueCodePrefix":{
+        "SUPER_ADMIN":"MPSA_",
+        "RECEPTIONIST":"MPR_",
+        "NURSE":"MPN_",
+        "MYPULSE_USER":"MPU_",
+        "MEDICAL_STORE":"MPS_",
+        "MEDICAL_LAB":"MPL_",
+        "HOSPITAL_ADMIN":"MPHA_",
+        "DOCTOR":"MPD_",
+        "HOSPITAL":"MPH_"
+    },
+   "uniqueStartNumber": 100000
 }
