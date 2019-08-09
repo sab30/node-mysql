@@ -47,15 +47,15 @@
     },
     "smtpFrom":"sabarishkashyap567@gmail.com",
     "uniqueCodePrefix":{
-        "SUPER_ADMIN":"MPSA_",
-        "RECEPTIONIST":"MPR_",
-        "NURSE":"MPN_",
-        "MYPULSE_USER":"MPU_",
-        "MEDICAL_STORE":"MPS_",
-        "MEDICAL_LAB":"MPL_",
-        "HOSPITAL_ADMIN":"MPHA_",
-        "DOCTOR":"MPD_",
-        "HOSPITAL":"MPH_"
+        "SUPER_ADMIN":"MPSA",
+        "RECEPTIONIST":"MPR",
+        "NURSE":"MPN",
+        "MYPULSE_USER":"MPU",
+        "MEDICAL_STORE":"MPS",
+        "MEDICAL_LAB":"MPL",
+        "HOSPITAL_ADMIN":"MPHA",
+        "DOCTOR":"MPD",
+        "HOSPITAL":"MPH"
     },
    "uniqueStartNumber": 100000
 }

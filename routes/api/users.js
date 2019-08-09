@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 var md5 = require('md5');
-
+const auth = require('../../middleware/auth');
 // @route  GET api/users
 // @desc   Test Route
 // @access Public
@@ -22,10 +22,10 @@ var poolReplica = db.getConnectionReplica();
 
 
   
-router.get('/', async (req,res) => {
+router.get('/login', async (req,res) => {
 
     try {
-        const data= await pool.execute('select * from test where id =1;');
+        const data= await pool.execute('select id,user_role, from test where id =1;');
         console.log(rows);
         
         // const data2= await pool.execute('select * from test where id =2;');
@@ -143,100 +143,119 @@ router.get('/', async (req,res) => {
         } = req.body;
         try {
             // Check user already exists
-            const [rows, fields]= await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
+
+            let rows = null;
+            [rows] =await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
                 user_email,
                 user_mobile,
                 user_password
-            ]);
-            // res.send({results : rows });
+            ]) ;
+
             if(rows.length > 0){
                 // User already exists
                 return res.status(400).json({errors : [ { message : 'User already exist'}]});
             }
-            // console.log(md5(user_password + config.get('passwordHash')));
-            // get last unique ID
-            try {
-                const [rows, fields] = await pool.query(`select user_unique_id from users 
-                where user_role=? order by id desc limit 1`,
-                [ user_role ]);
-
-                if(!errors.isEmpty()){
-                    return res.status(400).json({errors : errors.array()});
-                }
-                if(rows.length > 0){
-                    user_unique_id=  parseInt(rows[0].user_unique_id.split('_')[1]) + 1;
-                }else{
-                    user_unique_id=  config.get('uniqueStartNumber') + 1;
-                }
-              } catch (e) {
-                  console.error(e);
-                return res.status(500).json({errors : 'Internal server error'});
-              }
-              console.log(user_unique_id);
-              console.log(config.get('uniqueCodePrefix')[user_role] +  user_unique_id.toString());
 
 
-              user_unique_id = config.get('uniqueCodePrefix')[user_role] +  user_unique_id.toString()
-            // Create the user
+            // // res.send({results : rows });
 
-            let values = {
-                user_name : user_name ? user_name: null,
-                user_unique_id : user_unique_id,
-                user_first_name : user_first_name ? user_first_name: null,
-                user_last_name : user_last_name ? user_last_name: null,
-                user_gender : user_gender ? user_gender: null,
-                user_dob : user_dob ? user_dob: null,
-                latitude : latitude ? latitude: null,
-                longitude : longitude ? longitude: null,
-                user_password  : md5(user_password + config.get('passwordHash')),
-                user_email : user_email,
-                created_by : 99,
-                address : address ? address : '',
-                aadhar : aadhar ? aadhar : null,
-                qualification : qualification ? qualification : null,
-                profession : profession ? profession : null,
-                specializations : specializations ? specializations : null,
-                owner_name : owner_name ? owner_name : null,
-                owner_mobile : owner_mobile ? owner_mobile : null,
-                experience : experience ? experience : null,
-                user_role : user_role ? user_role : null,
-            };
-            let sql= pool.format(`insert into users SET ? `, values);
+            // // console.log(md5(user_password + config.get('passwordHash')));
+            // // get last unique ID
+            // getUniqueId = await pool.query(`select user_unique_id from users 
+            // where user_role=? order by id desc limit 1`,
+            // [ user_role ]);
 
-            const [results]= await pool.execute(sql);
-            if(results){
+            // if(getUniqueId.err)throw err;
 
-                //Send Email 
-                
-                let nodemailer = require('nodemailer');
-                let smtpTransport = require('nodemailer-smtp-transport');
+            // if(getUniqueId.rows.length > 0){
+            //     user_unique_id=  parseInt(rows[0].user_unique_id.split('_')[1]) + 1;
+            // }else{
+            //     user_unique_id=  config.get('uniqueStartNumber') + 1;
+            // }
 
-                let transporter = nodemailer.createTransport(smtpTransport(config.get('smtp')));
+            // // console.log(user_unique_id);
+            // // console.log(config.get('uniqueCodePrefix')[user_role] + '_' + user_unique_id.toString());
 
-                let mailOptions = { 
-                    from: config.get('smtpFrom'), 
-                    to: user_email, 
-                    subject: 'Activate your MyPulse Account',
-                    html: `<b>Dear User<b>`+
-                    `<br />`
-                    +
-                    `Your ID is : ` + user_unique_id +
-                    `<br />
-                    Thanks for registering with MyPulse. Please click this button to complete your registration.`
-                    };
 
-                transporter.sendMail(mailOptions, function(error, info){ 
-                    if (error) {
-                        return res.status(400).json({errors : 'Unable to send email to user'});
-                    } else {
-                        res.send({results :{ user_id : results.insertId } });
-                    }
-                });  
-            
-                // Send SMS,
-            }else{
-                return res.status(400).json({errors : 'Unable to create user'});
-            }
+            // user_unique_id = config.get('uniqueCodePrefix')[user_role] + "_" + user_unique_id.toString()
+            // // Create the user
+
+            // let values = {
+            //     user_name : user_name ? user_name: null,
+            //     user_unique_id : user_unique_id,
+            //     user_first_name : user_first_name ? user_first_name: null,
+            //     user_last_name : user_last_name ? user_last_name: null,
+            //     user_gender : user_gender ? user_gender: null,
+            //     user_dob : user_dob ? user_dob: null,
+            //     latitude : latitude ? latitude: null,
+            //     longitude : longitude ? longitude: null,
+            //     user_password  : md5(user_password + config.get('passwordHash')),
+            //     user_email : user_email,
+            //     created_by : 99,
+            //     address : address ? address : '',
+            //     aadhar : aadhar ? aadhar : null,
+            //     qualification : qualification ? qualification : null,
+            //     profession : profession ? profession : null,
+            //     specializations : specializations ? specializations : null,
+            //     owner_name : owner_name ? owner_name : null,
+            //     owner_mobile : owner_mobile ? owner_mobile : null,
+            //     experience : experience ? experience : null,
+            //     user_role : user_role ? user_role : null,
+            // };
+            // const insertUser = await pool.execute(`insert into users SET ? `, values);
+            // if (insertUser.err) throw err;
+
+            // if(insertUser.results){
+
+            //     const getRole = await pool.query(`select id from roles where
+            //     role_code=? limit 1`,
+            //     [ config.get('uniqueCodePrefix')[user_role] ]);
+            //     if(getRole.err)throw err;
+            //     if(getRole.rows.length > 0){
+            //         let row = results[0];
+            //         // Map role to user
+            //         let values={
+            //             user_id : results.insertId, 
+            //             role_id : created_by
+            //         }
+            //         const mapRole= pool.query(`insert into user_role SET ? `, values);
+            //         console.log('insert err');
+            //         console.log(error);
+
+                  
+            //         if(mapRole.err) throw error;
+            //         if(mapRole.results){
+            //             //Send Email 
+            //             let nodemailer = require('nodemailer');
+            //             let smtpTransport = require('nodemailer-smtp-transport');
+
+            //             let transporter = nodemailer.createTransport(smtpTransport(config.get('smtp')));
+
+            //             let mailOptions = { 
+            //                 from: config.get('smtpFrom'), 
+            //                 to: user_email, 
+            //                 subject: 'Activate your MyPulse Account',
+            //                 html: `<b>Dear User<b>`+
+            //                 `<br />`
+            //                 +
+            //                 `Your ID is : ` + user_unique_id +
+            //                 `<br />
+            //                 Thanks for registering with MyPulse. Please click this button to complete your registration.`
+            //                 };
+
+            //             transporter.sendMail(mailOptions, function(error, info){ 
+            //                 if (error) {
+            //                     return res.status(400).json({errors : 'Unable to send email to user'});
+            //                 } else {
+            //                     res.send({results :{ user_id : results.insertId } });
+            //                 }
+            //             });  
+            //         }
+            //     }
+            //     // Send SMS,
+            // }else{
+            //     return res.status(400).json({errors : 'Unable to create user'});
+            // }
         } catch (error) {
             console.log(error);
             return res.status(400).json({errors : error});
@@ -245,8 +264,60 @@ router.get('/', async (req,res) => {
     )
 
 
+/**
+     * Reset or Change User Password
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} / Reset User Password
+     * @apiName 		Register a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Update or change Pasword, 
+     *                  
+     *
+     * @apiPermission 	None
+     * @access Private
+     * */
+
+    router.post('/updatePassword',[
+        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
+            min:6
+        }),
+        check('old_password' , 'Please enter a old password').isLength({
+            min:6
+        }),
+        check('new_password' , 'Please enter a password with 6 or more chrachters for new password').isLength({
+            min:6
+        })
+    ], async (req,res) =>{
+
+        const [ old_password, new_password, user_password ] = req.body;
+
+        user_password= md5(user_password + config.get('passwordHash'));
+        old_password= md5(old_password + config.get('passwordHash'));
+        new_password = md5(new_password + config.get('passwordHash'));
+
+        try {
+            const [err, results, fields] = await pool.query(`select id from users where
+            user_id=? and user_password=? limit 1`,
+            [ old_password ]);
+            if (err) throw err;
+
+            if(rows.length > 0){
+                res.send(results);
+            }else{
+                return res.status(400).json({errors : [ { message : 'User dosen exist'}]});
+            }
+          } catch (e) {
+              console.error(e);
+            return res.status(500).json({errors : 'Internal server error'});
+          }
+    });
+
+
 router.post('/',[
-    check('user_name' , 'Name is required').not().isEmpty(),
     check('user_email' , 'Please include a valid email').isEmail(),
     check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
         min:6
