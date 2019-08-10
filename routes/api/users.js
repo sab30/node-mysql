@@ -132,7 +132,7 @@ var poolReplica = db.getConnectionReplica();
 
 
             let sql= pool.format(`insert into users SET ? `, values);
-            console.log(sql);
+            //console.log(sql);
             const [results]= await pool.query(sql);
 
             if(results){
@@ -182,7 +182,7 @@ var poolReplica = db.getConnectionReplica();
                                     +`<br />`+
                                     `<a href='`+ config.get('url') +"/api/users/verifyEmail/"+ token +`'>Click Here to activate</a>`
                                     };
-                                    console.log(token);
+                                    //console.log(token);
                                 transporter.sendMail(mailOptions, function(error, info){ 
                                     if (error) {
                                         return res.status(400).json({errors : 'Unable to send email to user'});
@@ -192,8 +192,6 @@ var poolReplica = db.getConnectionReplica();
                                 });  
                             }
                         );
-
-                        
                     }
                 }
                 // Send SMS,
@@ -201,7 +199,7 @@ var poolReplica = db.getConnectionReplica();
                 return res.status(400).json({errors : 'Unable to create user'});
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return res.status(400).json({errors : error});
         }
     }
@@ -298,17 +296,13 @@ var poolReplica = db.getConnectionReplica();
             // Decode the JWT hash 
             const decoded= jwt.verify(token,config.get('jwtSecret'));
             // Assaign the req.user to parsed output
-            console.log(decoded);
-            console.log(decoded.id);
             let [rows ] = await pool.query(`select id from users where
                 id=? limit 1`,
                 [ decoded.id ]);
-                console.log(rows);
                 if(rows.length > 0){
                     // Update user
                     [rows ] = await pool.query(`update users SET is_email_verified=?,
                     modified_by=? ,modified_at=now() where id=? `, [ 1,  decoded.id,  decoded.id]);
-                    console.log(rows);
                     if(rows){
                         res.send({results :{ is_email_verified : 1 } });
                     }else{
@@ -372,7 +366,7 @@ var poolReplica = db.getConnectionReplica();
             [ user_email, user_email, md5(user_password + config.get('passwordHash'))]);
 
             let [rows ] = await pool.query(sql);
-                // console.log(rows);
+
                 if(rows.length > 0){
                     const payload = {
                         user : rows[0]
@@ -424,14 +418,14 @@ var poolReplica = db.getConnectionReplica();
         }
 
         let {user_first_name,user_last_name,user_description,user_email,user_mobile,status } = req.body;
-        let values = {
-            user_first_name : user_first_name ? user_first_name: null,
-            user_last_name : user_last_name ? user_last_name: null,
-            user_description : user_description ? user_description : null,
-            user_email : user_email ? user_email : null, 
-            user_mobile : user_mobile ? user_mobile : null, 
-            status : status ? status : req.user.status
-        };
+
+            user_first_name = user_first_name ? user_first_name: null;
+            user_last_name = user_last_name ? user_last_name: null;
+            user_description = user_description ? user_description : null;
+            user_email = user_email ? user_email : null; 
+            user_mobile = user_mobile ? user_mobile : null; 
+            status = status ? status : req.user.status;
+
 
         try {
              // Check if user exist
@@ -444,7 +438,7 @@ var poolReplica = db.getConnectionReplica();
              [ req.user.id]);
  
              let [rows ] = await pool.query(sql);
-                 console.log(rows);
+ 
                  if(rows.length > 0){
                      // Update User Data
                      [ rows ] = await pool.query(`update users SET
@@ -460,18 +454,18 @@ var poolReplica = db.getConnectionReplica();
                      [ user_first_name,user_last_name,user_description,user_email,user_mobile,status,
                       req.user.id, req.user.id
                      ]);
-                     console.log(rows);
+
                      if(rows){
                          res.send({results : 'User basic info Updated'});
                      }else{
                          return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
                      }
-                 }else{
-                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
-                 }
+                }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist' } ]});
+                }
         } catch (error) {
-            console.error(error);
-            res.status(401).json({msg: error});
+                console.error(error);
+                res.status(401).json({msg: error});
         }
     });
 
@@ -512,16 +506,17 @@ var poolReplica = db.getConnectionReplica();
             district_id,
             city_id,
          } = req.body;
-        let values = {
-            user_gender : user_gender ? user_gender: null,
-            user_dob : user_dob ? user_dob: null,
-            address : address ? address : null,
-            user_profile_picture : user_profile_picture ? user_profile_picture : null,
-            country_id : country_id ? country_id : null, 
-            state_id : state_id ? state_id : null, 
-            district_id : district_id ? district_id : null, 
-            city_id : city_id ? city_id : null,
-        };
+         
+
+        user_gender = user_gender ? user_gender: null;
+        user_dob = user_dob ? user_dob: null;
+        address = address ? address : null;
+        user_profile_picture = user_profile_picture ? user_profile_picture : null;
+        country_id = country_id ? country_id : null; 
+        state_id = state_id ? state_id : null; 
+        district_id = district_id ? district_id : null; 
+        city_id = city_id ? city_id : null;
+
 
         try {
              // Check if user exist
@@ -534,7 +529,7 @@ var poolReplica = db.getConnectionReplica();
              [ req.user.id]);
  
              let [rows ] = await pool.query(sql);
-                //  console.log(rows);
+
                  if(rows.length > 0){
                      // Update User Data
                      [ rows ] = await pool.query(`update users SET
@@ -616,6 +611,20 @@ var poolReplica = db.getConnectionReplica();
             past_medical_history
          } = req.body;
 
+         patient_type = patient_type ? patient_type : null;
+         blood_group = blood_group ? blood_group : null;
+         in_time = in_time ? in_time : null;
+         account_opening_timestamp = account_opening_timestamp ? account_opening_timestamp : null;
+         aadhar = aadhar ? aadhar : null;
+         height = height ? height : null;
+         weight = weight ? weight : null;
+         blood_pressure = blood_pressure ? blood_pressure : null;
+         sugar_level = sugar_level ? sugar_level : null;
+         health_insurance_provider = health_insurance_provider ? health_insurance_provider : null;
+         health_insurance_id = health_insurance_id ? health_insurance_id : null;
+         family_history = family_history ? family_history : null;
+         past_medical_history= past_medical_history ? past_medical_history : null;
+
         try {
              // Check if user exist
              let sql= pool.format(`
@@ -666,9 +675,7 @@ var poolReplica = db.getConnectionReplica();
                         req.user.id,
                         req.user.id,
                      ]);
-                    //  console.log(sql);
                      [ rows ] = await pool.query(sql);
-                    //  console.log(rows);
                      if(rows){
                          res.send({results : 'User medical info Updated'});
                      }else{
@@ -682,78 +689,6 @@ var poolReplica = db.getConnectionReplica();
             res.status(401).json({msg: error});
         }
     });
-
-router.post('/',[
-    check('user_email' , 'Please include a valid email').isEmail(),
-    check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
-        min:6
-    })
-], async (req,res) =>{ 
-    // Validate error which takes a req object 
-    const errors= validationResult(req);
-
-    if(!errors.isEmpty()){
-        console.error(errors);
-        return res.status(400).json({errors : errors.array()});
-    }
-
-    const {name , email, password } = req.body;
-
-    // Destruct from req.body 
-    try {
-   
-    // See if user exists
-    let user = await User.findOne({ email });
-
-    if(user){
-        return res.status(400).json({errors : [ { message : 'User already exist'}]});
-    }
-
-    //Get user gravatar
-    // s(size): , r(rating):  d(default): 
-    const avatar = gravatar.url({
-        s:'200',
-        r:'pg',
-        d:'mm'
-    });
-
-    // Crate instance of the user;
-     user = new User({name , email , password , avatar});
-
-    // Encrypt password with bcrypt
-
-    //const salt = await bcrypt.genSalt(10);
-
-    // user.password  = await bcrypt.hash(password,salt);
-    // Will Return a Promise 
-    await user.save();
-
-    //Return JWT 
-
-    const payload = {
-        user:{
-            id: user.id
-        }
-    }
-    //get from config
-    jwt.sign(
-        payload, 
-        config.get('jwtSecret'),
-        {expiresIn: 360000},
-        (err,token) => {
-            if (err) throw err;
-            res.json({token});
-        }
-        );
-
-    //res.send('User Registered');
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send('User/ server error');
-    }
-
-})
-
 
 
 
