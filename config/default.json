@@ -1,4 +1,5 @@
 {
+    "url": "http://localhost:5000",
     "localhost" :{
         "host"     : "localhost",
         "user"     : "root",
@@ -57,5 +58,6 @@
         "DOCTOR":"MPD",
         "HOSPITAL":"MPH"
     },
-   "uniqueStartNumber": 100000
+   "uniqueStartNumber": 100000,
+   "jwtSecret": "myPuLsEsecrettoken"
 }

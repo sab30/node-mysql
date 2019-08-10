@@ -228,25 +228,42 @@ router.get('/login', async (req,res) => {
 
                         let transporter = nodemailer.createTransport(smtpTransport(config.get('smtp')));
 
-                        let mailOptions = { 
-                            from: config.get('smtpFrom'), 
-                            to: user_email, 
-                            subject: 'Activate your MyPulse Account',
-                            html: `<b>Dear User<b>`+
-                            `<br />`
-                            +
-                            `Your ID is : ` + user_unique_id +
-                            `<br />
-                            Thanks for registering with MyPulse. Please click this button to complete your registration.`
-                            };
-
-                        transporter.sendMail(mailOptions, function(error, info){ 
-                            if (error) {
-                                return res.status(400).json({errors : 'Unable to send email to user'});
-                            } else {
-                                res.send({results :{ user_id : results.insertId } });
+                        const payload = {
+                            id : results.insertId
+                        }
+                        // Email Expiry 30 min (30 * 60 * 1000)
+                        jwt.sign(
+                            payload, 
+                            config.get('jwtSecret'),
+                            {expiresIn: 3600000},
+                            (err,token) => {
+                                if (err) throw err;
+                                
+                                let mailOptions = { 
+                                    from: config.get('smtpFrom'), 
+                                    to: user_email, 
+                                    subject: 'Activate your MyPulse Account',
+                                    html: `<b>Dear User<b>`+
+                                    `<br />`
+                                    +
+                                    `Your ID is : ` + user_unique_id +
+                                    `<br />
+                                    Thanks for registering with MyPulse. Please click this button to complete your registration.`
+                                    +`<br />`+
+                                    `<a href='`+ config.get('url') +"/users/api/verifyEmail/"+ token +`'>Click Here to activate</a>`
+                                    };
+                                    console.log(token);
+                                transporter.sendMail(mailOptions, function(error, info){ 
+                                    if (error) {
+                                        return res.status(400).json({errors : 'Unable to send email to user'});
+                                    } else {
+                                        res.send({results :{ user_id : results.insertId } });
+                                    }
+                                });  
                             }
-                        });  
+                        );
+
+                        
                     }
                 }
                 // Send SMS,
@@ -268,7 +285,7 @@ router.get('/login', async (req,res) => {
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} / Reset User Password
+     * @api 			{post} /updatePassword Reset User Password
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Update or change Pasword, 
@@ -313,6 +330,58 @@ router.get('/login', async (req,res) => {
           }
     });
 
+/**
+     * Reset or Change User Password
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{get} /verifyemail Verfiy Email 
+     * @apiName 		Register a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Verify Email from mail change status of email status in user table, 
+     *                  
+     *
+     * @apiPermission 	None
+     * @access Private
+     * */
+
+    router.get('/verifyEmail/:token', async (req,res) =>{
+        try {
+
+            const token= req.params.token;
+            // Decode the JWT hash 
+            const decoded= jwt.verify(token,config.get('jwtSecret'));
+            // Assaign the req.user to parsed output
+            console.log(decoded);
+            console.log(decoded.id);
+            let [rows ] = await pool.query(`select id from users where
+                id=? limit 1`,
+                [ decoded.id ]);
+                console.log(rows);
+                if(rows.length > 0){
+                    // Update user
+                    [rows ] = await pool.query(`update users SET is_email_verified=?,
+                    modified_by=? ,modified_at=now() where id=? `, [ 1,  1,  decoded.id]);
+                    console.log(rows);
+                    if(rows){
+                        res.send({results :{ is_email_verified : 1 } });
+                    }else{
+                        return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                    }
+                
+                }else{
+                    return res.status(400).json({errors : [ { message : 'User dosenot exist'}]});
+                }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: 'token is not valid'});
+        }
+        
+    });
+
+    
 
 router.post('/',[
     check('user_email' , 'Please include a valid email').isEmail(),
