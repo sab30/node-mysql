@@ -215,7 +215,7 @@ var poolReplica = db.getConnectionReplica();
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /updatePassword Reset User Password
+     * @api 			{put} /password Reset User Password
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Update or change Pasword, 
@@ -225,34 +225,48 @@ var poolReplica = db.getConnectionReplica();
      * @access Private
      * */
 
-    router.post('/updatePassword',[
-        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
+    router.put('/password',auth,[
+        check('current_password' , 'Please enter a password with 6 or more chrachters').isLength({
             min:6
         }),
-        check('old_password' , 'Please enter a old password').isLength({
+        check('new_password' , 'Please enter a new password').isLength({
             min:6
         }),
-        check('new_password' , 'Please enter a password with 6 or more chrachters for new password').isLength({
+        check('confirm_password' , 'Please enter a password with 6 or more chrachters for confirm password').isLength({
             min:6
         })
     ], async (req,res) =>{
 
-        const [ old_password, new_password, user_password ] = req.body;
 
-        user_password= md5(user_password + config.get('passwordHash'));
-        old_password= md5(old_password + config.get('passwordHash'));
-        new_password = md5(new_password + config.get('passwordHash'));
+        let { current_password, new_password,  confirm_password} = req.body;
 
+        if(new_password != confirm_password){
+            return res.status(500).json({errors : [ { message : 'confirm password is wrong'}]});
+        }
+
+        current_password= md5(current_password + config.get('passwordHash'));
+        new_password= md5(new_password + config.get('passwordHash'));
+        confirm_password = md5(confirm_password + config.get('passwordHash'));
+        
         try {
-            const [err, results, fields] = await pool.query(`select id from users where
-            user_id=? and user_password=? limit 1`,
-            [ old_password ]);
-            if (err) throw err;
+            let [rows] = await pool.query(`select id from users where
+            id=? and user_password=? limit 1`,
+            [ req.user.id, current_password ]);
 
             if(rows.length > 0){
-                res.send(results);
+                // Update Password if user exist
+
+                [rows ] = await pool.query(`update users SET user_password=?,
+                modified_by=? ,modified_at=now() where id=? `, [ new_password,req.user.id,req.user.id]);
+
+                if(rows){
+                    res.send({results :{ status : 'password changed' } });
+                }else{
+                    return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                }
+
             }else{
-                return res.status(400).json({errors : [ { message : 'User dosen exist'}]});
+                return res.status(400).json({errors : [ { message : 'password didnt match'}]});
             }
           } catch (e) {
               console.error(e);
