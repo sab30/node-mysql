@@ -387,6 +387,36 @@ var poolReplica = db.getConnectionReplica();
         }
     }); 
 
+    /**
+     * Get User by id
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{get} /byid user login
+     * @apiName 		Get Current User details
+     * @apiGroup 		User
+     * @apiDescription  Login with user_email , mobile and password and get a JWT token
+     *                  
+     *
+     * @apiPermission 	None
+     * @access Public
+     * */
+
+    router.get('/byid', auth ,async (req,res) =>{ 
+        // Validate error which takes a req object 
+        try {
+            let [rows ] = await pool.query(`SELECT * from get_mypulse_users WHERE user_id=? limit 1`,[ req.user.id]);
+                if(rows.length > 0){
+                    res.send(rows[0]);
+                }else{
+                    return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                }
+        } catch (error) {
+            res.status(401).json({msg: error});
+        }
+    });
 
     /**
      * Mypulse User Basic Info api
@@ -685,6 +715,7 @@ var poolReplica = db.getConnectionReplica();
             res.status(401).json({msg: error});
         }
     });
+
 
 
 
