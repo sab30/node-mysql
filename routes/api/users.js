@@ -250,7 +250,7 @@ router.get('/login', async (req,res) => {
                                     `<br />
                                     Thanks for registering with MyPulse. Please click this button to complete your registration.`
                                     +`<br />`+
-                                    `<a href='`+ config.get('url') +"/users/api/verifyEmail/"+ token +`'>Click Here to activate</a>`
+                                    `<a href='`+ config.get('url') +"/api/users/verifyEmail/"+ token +`'>Click Here to activate</a>`
                                     };
                                     console.log(token);
                                 transporter.sendMail(mailOptions, function(error, info){ 
