@@ -454,13 +454,13 @@ router.get('/login', async (req,res) => {
 
 
     /**
-     * Login api
+     * Mypulse User Basic Info api
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /userBasicInfo My pulse user Basic info
+     * @api 			{post} /basicinfo My pulse user Basic info
      * @apiName 		Mypulse User Basic info 
      * @apiGroup 		User
      * @apiDescription  Mypulse User Basic info insert or Update
@@ -469,7 +469,7 @@ router.get('/login', async (req,res) => {
      * @apiPermission 	auth
      * @access Private
      * */
-    router.post('/userBasicInfo',auth,[
+    router.post('/basicinfo',auth,[
         check('user_first_name' , 'Please include a valid email').not().isEmpty(),
     ], async (req,res) =>{ 
         const errors= validationResult(req);
@@ -517,7 +517,108 @@ router.get('/login', async (req,res) => {
                      ]);
                      console.log(rows);
                      if(rows){
-                         res.send({results : 'User data Updated'});
+                         res.send({results : 'User basic info Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                     }
+                 }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                 }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+    });
+
+
+
+    /**
+     * Mypulse User Genaral Info api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /generalinfo My pulse user Genaral info
+     * @apiName 		Mypulse User Genaral info 
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User Genaral info insert or Update
+     *                  
+     *
+     * @apiPermission 	auth
+     * @access Private
+     * */
+    router.post('/generalinfo',auth,[
+        check('user_dob').toDate(),
+        check('user_gender').isIn(['M', 'F','O'])
+    ], async (req,res) =>{ 
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+        let {
+            user_gender,
+            user_dob,
+            address,
+            user_profile_picture,
+            country_id,
+            state_id,
+            district_id,
+            city_id,
+         } = req.body;
+        let values = {
+            user_gender : user_gender ? user_gender: null,
+            user_dob : user_dob ? user_dob: null,
+            address : address ? address : null,
+            user_profile_picture : user_profile_picture ? user_profile_picture : null,
+            country_id : country_id ? country_id : null, 
+            state_id : state_id ? state_id : null, 
+            district_id : district_id ? district_id : null, 
+            city_id : city_id ? city_id : null,
+        };
+
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  id 
+             FROM
+                 users
+             WHERE
+             id=? limit 1`,
+             [ req.user.id]);
+ 
+             let [rows ] = await pool.query(sql);
+                //  console.log(rows);
+                 if(rows.length > 0){
+                     // Update User Data
+                     [ rows ] = await pool.query(`update users SET
+                     user_gender =?,
+                     user_dob =?,
+                     address =?,
+                     user_profile_picture=?,
+                     country_id =?,
+                     state_id =?,
+                     district_id =?,
+                     city_id =?,
+                     modified_by=? ,
+                     modified_at=now() 
+                     where id=? `, 
+                     [ 
+                        user_gender,
+                        user_dob,
+                        address,
+                        user_profile_picture,
+                        country_id,
+                        state_id,
+                        district_id,
+                        city_id,
+                        req.user.id,
+                       req.user.id
+                     ]);
+                    //  console.log(rows);
+                     if(rows){
+                         res.send({results : 'User general info Updated'});
                      }else{
                          return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
                      }
