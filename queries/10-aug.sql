@@ -954,7 +954,7 @@ CREATE TABLE `user_role` (
 
 LOCK TABLES `user_role` WRITE;
 /*!40000 ALTER TABLE `user_role` DISABLE KEYS */;
-INSERT INTO `user_role` VALUES (2,1,4,1,'2019-08-10 05:05:46',NULL,NULL,1);
+INSERT INTO `user_role` VALUES (1,1,4,1,'2019-08-10 07:08:04',NULL,NULL,1),(2,6,4,6,'2019-08-10 11:26:35',NULL,NULL,1);
 /*!40000 ALTER TABLE `user_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -968,7 +968,6 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_role` enum('SUPER_ADMIN','RECEPTIONIST','NURSE','MYPULSE_USER','MEDICAL_STORE','MEDICAL_LAB','HOSPITAL_ADMIN','DOCTOR','HOSPITAL') NOT NULL,
-  `user_name` varchar(50) NOT NULL,
   `user_unique_id` varchar(20) NOT NULL,
   `user_first_name` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
   `user_last_name` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
@@ -977,6 +976,7 @@ CREATE TABLE `users` (
   `user_email` varchar(100) DEFAULT NULL,
   `is_mobile_verified` tinyint(3) NOT NULL DEFAULT '0',
   `is_email_verified` tinyint(3) NOT NULL DEFAULT '0',
+  `user_description` varchar(250) DEFAULT NULL,
   `user_gender` varchar(1) DEFAULT NULL,
   `user_dob` date DEFAULT NULL,
   `user_area_id` int(11) DEFAULT NULL,
@@ -1005,12 +1005,13 @@ CREATE TABLE `users` (
   `modified_by` int(11) DEFAULT NULL,
   `modified_at` timestamp NULL DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1-Active 0-Inactive',
+  `user_profile_picture` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_unique_id` (`user_unique_id`) USING BTREE,
   UNIQUE KEY `user_email` (`user_email`),
   KEY `user_email_idx` (`user_email`),
   KEY `user_password_idx` (`user_password`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1019,47 +1020,51 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'MYPULSE_USER','sab','MPU_100001',NULL,NULL,'a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarish3012@gmail.com',0,0,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 05:05:46',NULL,NULL,1);
+INSERT INTO `users` VALUES (1,'MYPULSE_USER','MPU_100001','sabarish','K','a9c7c33c48a8bf53d01b030be54a323b','9739551587','sabarish3012@gmail.com',0,1,'mypukse userds','M','1992-12-30',NULL,NULL,NULL,'72 angavarpalaya',NULL,NULL,NULL,NULL,1,1,1,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 07:08:04',1,'2019-08-10 10:22:53',1,'test'),(6,'MYPULSE_USER','MPU_100002','sabkashyap',NULL,'a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishkashyap567@gmail.com',0,0,NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 11:26:35',NULL,NULL,1,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `users_info`
+-- Table structure for table `users_medical_info`
 --
 
-DROP TABLE IF EXISTS `users_info`;
+DROP TABLE IF EXISTS `users_medical_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE `users_info` (
+CREATE TABLE `users_medical_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `patient_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `blood_group` varchar(5) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `patient_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `blood_group` varchar(5) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `in_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `aadhar` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `height` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `weight` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `blood_pressure` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `sugar_level` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `health_insurance_provider` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `health_insurance_id` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `family_history` varchar(250) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `past_medical_history` varchar(250) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `account_opening_timestamp` int(11) DEFAULT NULL,
+  `aadhar` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `height` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `weight` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `blood_pressure` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sugar_level` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `health_insurance_provider` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `health_insurance_id` varchar(60) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `family_history` varchar(250) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `past_medical_history` varchar(250) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `reg_status` tinyint(4) DEFAULT '1' COMMENT '1=registered,2=unregistered',
   `created_by` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified_by` int(11) DEFAULT NULL,
   `modified_at` timestamp NULL DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1-Active 0-Inactive',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `users_info`
+-- Dumping data for table `users_medical_info`
 --
 
-LOCK TABLES `users_info` WRITE;
-/*!40000 ALTER TABLE `users_info` DISABLE KEYS */;
-/*!40000 ALTER TABLE `users_info` ENABLE KEYS */;
+LOCK TABLES `users_medical_info` WRITE;
+/*!40000 ALTER TABLE `users_medical_info` DISABLE KEYS */;
+INSERT INTO `users_medical_info` VALUES (2,1,'test','A+','2019-08-10 11:37:50',NULL,'123213313','12','12','21','12','asd','123','test','no',1,6,'2019-08-10 11:26:35',1,'2019-08-10 11:37:50',1);
+/*!40000 ALTER TABLE `users_medical_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1106,4 +1111,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-10 10:39:54
+-- Dump completed on 2019-08-10 17:08:49

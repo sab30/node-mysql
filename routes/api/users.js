@@ -20,75 +20,6 @@ var db = require('../../config/db');
 var pool = db.getConnection();
 var poolReplica = db.getConnectionReplica();
 
-
-  
-router.get('/login', async (req,res) => {
-
-    try {
-        const data= await poolReplica.execute('select id,user_role, from test where id =1;');
-        console.log(rows);
-        
-        // const data2= await pool.execute('select * from test where id =2;');
-        // console.log(rows2);
-        res.send({'q' : data['rows']});
-        // res.send({'q' : rows});
-    } catch (e) {
-        console.log('caught exception!', e);
-    }
-
-    // try{
-    //     let [data1, data2]= await Promise.all([
-    //         pool.query('select * from test where id=1'),
-    //         pool.query('select * from test where id=2')
-    //     ]);
-    //     console.log(data1.rows);
-    //     console.log(data2.rows);
-    //     return res.send({data1 : data1.rows});
-    // } catch (e) {
-    //     console.log('caught exception!', e);
-    // }
-
-
-        
-
-
-
-    // pool.getConnection((err, db) => {
-    //     if (err) res.send(err);
-    //     db.query('select 1+1', (err, rows, fields) => {
-    //     if (err) res.send(err);
-    //       console.log(rows, fields);
-    //       res.send(rows);
-    //       db.release();
-    //     });
-    //   });
-
-
-
-    // User.select('select 1 + 1' , function (err,task){
-    //     if (err) res.send(err);
-    //     console.log('res', task);
-    //     res.send(task);
-    // });
-    // User.check('select 1', req,res, function(err, task) {
-    // //User.check('select 1', req,res, function(err, task) {
-    //     console.log('controller')
-    //     if (err)
-    //       res.send(err);
-    //       console.log('res', task);
-    //     res.send(task);
-    //   });
-    // let data = await crud.select('select 1+1');
-    // console.log(data);
-    // return res.json({data : data});
-});
-// @route  GET api/users
-// @desc   Test Route
-// @access Public
-// router.get('/', (req,res) =>{
-//     res.send('User Route');
-// })
-
   /**
      * Creates a User or Registration
      * 
@@ -106,8 +37,8 @@ router.get('/login', async (req,res) => {
      * @access Public
      * */
 
-    router.post('/createUser',[
-        check('user_name' , 'Name is required').not().isEmpty(),
+    router.post('/create',[
+        check('user_first_name' , 'Name is required').not().isEmpty(),
         check('user_email' , 'Please include a valid email').isEmail(),
         check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
             min:6
@@ -123,7 +54,6 @@ router.get('/login', async (req,res) => {
     
         // Check User Exists
         let {user_email , user_password, user_mobile ,
-            user_name,
             user_unique_id,
             user_first_name,
             user_last_name,
@@ -202,6 +132,7 @@ router.get('/login', async (req,res) => {
 
 
             let sql= pool.format(`insert into users SET ? `, values);
+            console.log(sql);
             const [results]= await pool.query(sql);
 
             if(results){
@@ -619,6 +550,113 @@ router.get('/login', async (req,res) => {
                     //  console.log(rows);
                      if(rows){
                          res.send({results : 'User general info Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                     }
+                 }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                 }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+    });
+
+
+    /**
+     * Mypulse User medicalinfo  api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /generalinfo My pulse user medicalinfo info
+     * @apiName 		Mypulse User medicalinfo
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User medicalinfo insert or Update
+     *                  
+     *
+     * @apiPermission 	auth
+     * @access Private
+     * */
+    router.post('/medicalinfo',auth
+    , async (req,res) =>{ 
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+        let {
+            patient_type,
+            blood_group,
+            in_time,
+            account_opening_timestamp,
+            aadhar,
+            height,
+            weight,
+            blood_pressure,
+            sugar_level,
+            health_insurance_provider,
+            health_insurance_id,
+            family_history,
+            past_medical_history
+         } = req.body;
+
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  id 
+             FROM
+                 users
+             WHERE
+             id=? limit 1`,
+             [ req.user.id]);
+ 
+             let [rows ] = await pool.query(sql);
+                //  console.log(rows);
+                 if(rows.length > 0){
+                     // Update User Data
+                     let sql = pool.format(`update users_medical_info SET
+                     user_id=?,
+                     patient_type=?,
+                     blood_group=?,
+                     in_time=?,
+                     account_opening_timestamp=?,
+                     aadhar=?,
+                     height=?,
+                     weight=?,
+                     blood_pressure=?,
+                     sugar_level=?,
+                     health_insurance_provider=?,
+                     health_insurance_id=?,
+                     family_history=?,
+                     past_medical_history=?,
+                     modified_by=?,
+                     modified_at=now()
+                     where user_id=? `, 
+                     [ 
+                        req.user.id,
+                        patient_type,
+                        blood_group,
+                        in_time,
+                        account_opening_timestamp,
+                        aadhar,
+                        height,
+                        weight,
+                        blood_pressure,
+                        sugar_level,
+                        health_insurance_provider,
+                        health_insurance_id,
+                        family_history,
+                        past_medical_history,
+                        req.user.id,
+                        req.user.id,
+                     ]);
+                    //  console.log(sql);
+                     [ rows ] = await pool.query(sql);
+                    //  console.log(rows);
+                     if(rows){
+                         res.send({results : 'User medical info Updated'});
                      }else{
                          return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
                      }
