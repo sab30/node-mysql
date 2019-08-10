@@ -392,6 +392,76 @@ LOCK TABLES `district` WRITE;
 UNLOCK TABLES;
 
 --
+-- Temporary view structure for view `get_mypulse_users`
+--
+
+DROP TABLE IF EXISTS `get_mypulse_users`;
+/*!50001 DROP VIEW IF EXISTS `get_mypulse_users`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8mb4;
+/*!50001 CREATE VIEW `get_mypulse_users` AS SELECT 
+ 1 AS `user_id`,
+ 1 AS `user_role`,
+ 1 AS `user_unique_id`,
+ 1 AS `user_first_name`,
+ 1 AS `user_last_name`,
+ 1 AS `user_mobile`,
+ 1 AS `user_email`,
+ 1 AS `is_mobile_verified`,
+ 1 AS `is_email_verified`,
+ 1 AS `user_description`,
+ 1 AS `user_gender`,
+ 1 AS `user_dob`,
+ 1 AS `user_area_id`,
+ 1 AS `longitude`,
+ 1 AS `latitude`,
+ 1 AS `address`,
+ 1 AS `hospital_id`,
+ 1 AS `branch_id`,
+ 1 AS `department_id`,
+ 1 AS `doctor_id`,
+ 1 AS `city_id`,
+ 1 AS `state_id`,
+ 1 AS `district_id`,
+ 1 AS `country_id`,
+ 1 AS `description`,
+ 1 AS `aadhar`,
+ 1 AS `registration`,
+ 1 AS `qualification`,
+ 1 AS `profession`,
+ 1 AS `specializations`,
+ 1 AS `owner_name`,
+ 1 AS `owner_mobile`,
+ 1 AS `experience`,
+ 1 AS `created_by`,
+ 1 AS `created_at`,
+ 1 AS `modified_by`,
+ 1 AS `modified_at`,
+ 1 AS `status`,
+ 1 AS `user_profile_picture`,
+ 1 AS `users_medical_info_id`,
+ 1 AS `users_medical_info_user_id`,
+ 1 AS `patient_type`,
+ 1 AS `blood_group`,
+ 1 AS `in_time`,
+ 1 AS `account_opening_timestamp`,
+ 1 AS `height`,
+ 1 AS `weight`,
+ 1 AS `blood_pressure`,
+ 1 AS `sugar_level`,
+ 1 AS `health_insurance_provider`,
+ 1 AS `health_insurance_id`,
+ 1 AS `family_history`,
+ 1 AS `past_medical_history`,
+ 1 AS `reg_status`,
+ 1 AS `users_medical_info_created_by`,
+ 1 AS `users_medical_info_created_at`,
+ 1 AS `users_medical_info_modified_by`,
+ 1 AS `users_medical_info_modified_at`,
+ 1 AS `users_medical_info_status`*/;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Table structure for table `hospitals`
 --
 
@@ -1020,7 +1090,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'MYPULSE_USER','MPU_100001','sabarish','K','a9c7c33c48a8bf53d01b030be54a323b','9739551587','sabarish3012@gmail.com',0,1,'mypukse userds','M','1992-12-30',NULL,NULL,NULL,'72 angavarpalaya',NULL,NULL,NULL,NULL,1,1,1,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 07:08:04',1,'2019-08-10 10:22:53',1,'test'),(6,'MYPULSE_USER','MPU_100002','sabkashyap',NULL,'a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishkashyap567@gmail.com',0,0,NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 11:26:35',NULL,NULL,1,NULL);
+INSERT INTO `users` VALUES (1,'MYPULSE_USER','MPU_100001','sabarish','K','a9c7c33c48a8bf53d01b030be54a323b','9739551587','sabarish3012@gmail.com',0,1,'mypukse userds','M','1992-12-30',NULL,NULL,NULL,'72 angavarpalaya',NULL,NULL,NULL,NULL,1,1,1,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 07:08:04',1,'2019-08-10 14:11:57',1,'test'),(6,'MYPULSE_USER','MPU_100002','sabkashyap',NULL,'a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishkashyap567@gmail.com',0,0,NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-10 11:26:35',NULL,NULL,1,NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1038,7 +1108,6 @@ CREATE TABLE `users_medical_info` (
   `blood_group` varchar(5) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `in_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `account_opening_timestamp` int(11) DEFAULT NULL,
-  `aadhar` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `height` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `weight` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
   `blood_pressure` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -1063,7 +1132,7 @@ CREATE TABLE `users_medical_info` (
 
 LOCK TABLES `users_medical_info` WRITE;
 /*!40000 ALTER TABLE `users_medical_info` DISABLE KEYS */;
-INSERT INTO `users_medical_info` VALUES (2,1,'test','A+','2019-08-10 11:37:50',NULL,'123213313','12','12','21','12','asd','123','test','no',1,6,'2019-08-10 11:26:35',1,'2019-08-10 11:37:50',1);
+INSERT INTO `users_medical_info` VALUES (2,1,'test','A+','2019-08-10 11:37:50',NULL,'12','12','21','12','asd','123','test','no',1,6,'2019-08-10 11:26:35',1,'2019-08-10 11:37:50',1);
 /*!40000 ALTER TABLE `users_medical_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1101,6 +1170,24 @@ LOCK TABLES `ward` WRITE;
 /*!40000 ALTER TABLE `ward` DISABLE KEYS */;
 /*!40000 ALTER TABLE `ward` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Final view structure for view `get_mypulse_users`
+--
+
+/*!50001 DROP VIEW IF EXISTS `get_mypulse_users`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `get_mypulse_users` AS select `users`.`id` AS `user_id`,`users`.`user_role` AS `user_role`,`users`.`user_unique_id` AS `user_unique_id`,`users`.`user_first_name` AS `user_first_name`,`users`.`user_last_name` AS `user_last_name`,`users`.`user_mobile` AS `user_mobile`,`users`.`user_email` AS `user_email`,`users`.`is_mobile_verified` AS `is_mobile_verified`,`users`.`is_email_verified` AS `is_email_verified`,`users`.`user_description` AS `user_description`,`users`.`user_gender` AS `user_gender`,`users`.`user_dob` AS `user_dob`,`users`.`user_area_id` AS `user_area_id`,`users`.`longitude` AS `longitude`,`users`.`latitude` AS `latitude`,`users`.`address` AS `address`,`users`.`hospital_id` AS `hospital_id`,`users`.`branch_id` AS `branch_id`,`users`.`department_id` AS `department_id`,`users`.`doctor_id` AS `doctor_id`,`users`.`city_id` AS `city_id`,`users`.`state_id` AS `state_id`,`users`.`district_id` AS `district_id`,`users`.`country_id` AS `country_id`,`users`.`description` AS `description`,`users`.`aadhar` AS `aadhar`,`users`.`registration` AS `registration`,`users`.`qualification` AS `qualification`,`users`.`profession` AS `profession`,`users`.`specializations` AS `specializations`,`users`.`owner_name` AS `owner_name`,`users`.`owner_mobile` AS `owner_mobile`,`users`.`experience` AS `experience`,`users`.`created_by` AS `created_by`,`users`.`created_at` AS `created_at`,`users`.`modified_by` AS `modified_by`,`users`.`modified_at` AS `modified_at`,`users`.`status` AS `status`,`users`.`user_profile_picture` AS `user_profile_picture`,`users_medical_info`.`id` AS `users_medical_info_id`,`users_medical_info`.`user_id` AS `users_medical_info_user_id`,`users_medical_info`.`patient_type` AS `patient_type`,`users_medical_info`.`blood_group` AS `blood_group`,`users_medical_info`.`in_time` AS `in_time`,`users_medical_info`.`account_opening_timestamp` AS `account_opening_timestamp`,`users_medical_info`.`height` AS `height`,`users_medical_info`.`weight` AS `weight`,`users_medical_info`.`blood_pressure` AS `blood_pressure`,`users_medical_info`.`sugar_level` AS `sugar_level`,`users_medical_info`.`health_insurance_provider` AS `health_insurance_provider`,`users_medical_info`.`health_insurance_id` AS `health_insurance_id`,`users_medical_info`.`family_history` AS `family_history`,`users_medical_info`.`past_medical_history` AS `past_medical_history`,`users_medical_info`.`reg_status` AS `reg_status`,`users_medical_info`.`created_by` AS `users_medical_info_created_by`,`users_medical_info`.`created_at` AS `users_medical_info_created_at`,`users_medical_info`.`modified_by` AS `users_medical_info_modified_by`,`users_medical_info`.`modified_at` AS `users_medical_info_modified_at`,`users_medical_info`.`status` AS `users_medical_info_status` from (`users` left join `users_medical_info` on((`users_medical_info`.`user_id` = `users`.`id`))) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -1111,4 +1198,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-10 17:08:49
+-- Dump completed on 2019-08-10 20:03:14

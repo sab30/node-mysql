@@ -1,19 +1,15 @@
 // User Js
 const express = require('express');
-// Useexpress Reouter
+// Use express Rerouter
 const router = express.Router();
 const config = require('config');
 const {check, validationResult} = require('express-validator');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
-// Import UserModel
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 var md5 = require('md5');
 const auth = require('../../middleware/auth');
-// @route  GET api/users
-// @desc   Test Route
-// @access Public
 //https://github.com/sidorares/node-mysql2/blob/master/examples/promise-co-await/await.js
 var db = require('../../config/db');
 
