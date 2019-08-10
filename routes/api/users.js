@@ -179,7 +179,6 @@ router.get('/login', async (req,res) => {
             // Create the user
 
             let values = {
-                user_name : user_name ? user_name: null,
                 user_unique_id : user_unique_id,
                 user_first_name : user_first_name ? user_first_name: null,
                 user_last_name : user_last_name ? user_last_name: null,
@@ -344,7 +343,7 @@ router.get('/login', async (req,res) => {
      *                  
      *
      * @apiPermission 	None
-     * @access Private
+     * @access Public
      * */
 
     router.get('/verifyEmail/:token', async (req,res) =>{
@@ -363,7 +362,7 @@ router.get('/login', async (req,res) => {
                 if(rows.length > 0){
                     // Update user
                     [rows ] = await pool.query(`update users SET is_email_verified=?,
-                    modified_by=? ,modified_at=now() where id=? `, [ 1,  1,  decoded.id]);
+                    modified_by=? ,modified_at=now() where id=? `, [ 1,  decoded.id,  decoded.id]);
                     console.log(rows);
                     if(rows){
                         res.send({results :{ is_email_verified : 1 } });
@@ -380,6 +379,23 @@ router.get('/login', async (req,res) => {
         }
         
     });
+
+    /**
+     * Login api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /login user login
+     * @apiName 		Login a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Login with user_email , mobile and password and get a JWT token
+     *                  
+     *
+     * @apiPermission 	None
+     * @access Public
+     * */
 
     router.post('/login',[
         check('user_email' , 'Please include a valid email').not().isEmpty(),
@@ -399,7 +415,7 @@ router.get('/login', async (req,res) => {
         try {
             let sql= pool.format(`
             SELECT 
-                u.id, user_role, ur.role_id, r.role, r.role_code
+                u.id, user_role, ur.role_id, r.role, r.role_code,u.status
             FROM
                 users u
                     INNER JOIN
@@ -434,9 +450,85 @@ router.get('/login', async (req,res) => {
             console.error(error);
             res.status(401).json({msg: error});
         }
-
-
     }); 
+
+
+    /**
+     * Login api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /userBasicInfo My pulse user Basic info
+     * @apiName 		Mypulse User Basic info 
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User Basic info insert or Update
+     *                  
+     *
+     * @apiPermission 	auth
+     * @access Private
+     * */
+    router.post('/userBasicInfo',auth,[
+        check('user_first_name' , 'Please include a valid email').not().isEmpty(),
+    ], async (req,res) =>{ 
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+
+        let {user_first_name,user_last_name,user_description,user_email,user_mobile,status } = req.body;
+        let values = {
+            user_first_name : user_first_name ? user_first_name: null,
+            user_last_name : user_last_name ? user_last_name: null,
+            user_description : user_description ? user_description : null,
+            user_email : user_email ? user_email : null, 
+            user_mobile : user_mobile ? user_mobile : null, 
+            status : status ? status : req.user.status
+        };
+
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  id 
+             FROM
+                 users
+             WHERE
+             id=? limit 1`,
+             [ req.user.id]);
+ 
+             let [rows ] = await pool.query(sql);
+                 console.log(rows);
+                 if(rows.length > 0){
+                     // Update User Data
+                     [ rows ] = await pool.query(`update users SET
+                     user_first_name=?,
+                     user_last_name=?,
+                     user_description=?,
+                     user_email=?,
+                     user_mobile=?,
+                     status=?,
+                     modified_by=? ,
+                     modified_at=now() 
+                     where id=? `, 
+                     [ user_first_name,user_last_name,user_description,user_email,user_mobile,status,
+                      req.user.id, req.user.id
+                     ]);
+                     console.log(rows);
+                     if(rows){
+                         res.send({results : 'User data Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                     }
+                 }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                 }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+    });
 
 router.post('/',[
     check('user_email' , 'Please include a valid email').isEmail(),
