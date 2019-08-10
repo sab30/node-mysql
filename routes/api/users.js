@@ -381,7 +381,62 @@ router.get('/login', async (req,res) => {
         
     });
 
-    
+    router.post('/login',[
+        check('user_email' , 'Please include a valid email').not().isEmpty(),
+        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
+            min:6
+        })
+    ], async (req,res) =>{ 
+        // Validate error which takes a req object 
+        const errors= validationResult(req);
+
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+
+        const {user_email, user_password} =req.body;
+        try {
+            let sql= pool.format(`
+            SELECT 
+                u.id, user_role, ur.role_id, r.role, r.role_code
+            FROM
+                users u
+                    INNER JOIN
+                user_role ur ON ur.user_id = u.id
+                    INNER JOIN
+                roles r ON r.id = ur.role_id
+            WHERE
+            (user_email=? or user_mobile=?) and user_password=? limit 1`,
+            [ user_email, user_email, md5(user_password + config.get('passwordHash'))]);
+
+            let [rows ] = await pool.query(sql);
+                // console.log(rows);
+                if(rows.length > 0){
+                    const payload = {
+                        user : rows[0]
+                    }
+                    //get from config
+                    jwt.sign(
+                        payload, 
+                        config.get('jwtSecret'),
+                        {expiresIn: 360000},
+                        (err,token) => {
+                            if (err) throw err;
+                            res.json({token});
+                        }
+                        );
+                
+                }else{
+                    return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+
+
+    }); 
 
 router.post('/',[
     check('user_email' , 'Please include a valid email').isEmail(),
