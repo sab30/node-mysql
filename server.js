@@ -1,5 +1,6 @@
 const express = require('express');
-const compression = require('compression')
+const compression = require('compression');
+var cors = require('cors');
 // const connectDB = require('./config/db');
 
 
@@ -10,7 +11,8 @@ const app = express();
 // connectDB();
 
 // Init Body parser via express midleware
-app.use(compression())
+app.use(compression());
+app.use(cors());
 app.use(express.json({ extended : false }));
  
 // If no port is set by default the port would be 5000
@@ -21,7 +23,7 @@ app.get('/', (req,res) => res.send('API Running....'));
 
 // DEFINE AND ACCESS THE ROUTES
 app.use('/api/users', require('./routes/api/users'));
-// app.use('/api/posts', require('./routes/api/posts'));
+app.use('/api/hospital', require('./routes/api/hospital'));
 // app.use('/api/profile', require('./routes/api/profile'));
 // app.use('/api/auth', require('./routes/api/auth'));
 
