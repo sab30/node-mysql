@@ -2,7 +2,7 @@ const express = require('express');
 const compression = require('compression');
 var cors = require('cors');
 // const connectDB = require('./config/db');
-
+//apidoc -f "api/.*\\.js$" -i ./  -o apidoc/
 
 const app = express();
 

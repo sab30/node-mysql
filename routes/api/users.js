@@ -20,11 +20,32 @@ var poolReplica = db.getConnectionReplica();
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} / Create or Register a User
+     * @api 			{post} /create Create or Register a User
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
-     *                  
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} authorization The user’s JWT
+     * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,
+RECEPTIONIST,
+NURSE,
+MYPULSE_USER,
+MEDICAL_STORE,
+MEDICAL_LAB,
+HOSPITAL_ADMIN,
+DOCTOR
+] 
+     * @apiParam        {String} user_first_name User Name
+     * @apiParam        {String} user_email Email for login in
+     * @apiParam        {String} user_password Users Password
+     * @apiParamExample {json} Request-Example:
+     * {
+            "user_first_name" :"sabkashyap",
+            "user_email" : "sabarishkashyap567@gmail.com",
+            "user_password": "123456",
+            "user_role":"MYPULSE_USER"
+        }     
      *
      * @apiPermission 	None
      * @access Public
