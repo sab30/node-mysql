@@ -20,7 +20,7 @@ var poolReplica = db.getConnectionReplica();
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /create Create or Register a User
+     * @api 			{post} /api/users/create Create or Register a User
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
@@ -47,8 +47,7 @@ DOCTOR
             "user_role":"MYPULSE_USER"
         }     
      *
-     * @apiPermission 	None
-     * @access Public
+     * @access Private
      * */
 
     router.post('/create',[
@@ -228,13 +227,22 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{put} /password Reset User Password
+     * @api 			{put} /api/users/password Reset User Password
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Update or change Pasword, 
-     *                  
-     *
-     * @apiPermission 	None
+* @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} authorization The user’s JWT
+     * @apiParam        {String} current_password User Name
+     * @apiParam        {String} new_password Email for login in
+     * @apiParam        {String} confirm_password Users Password
+     * @apiParamExample {json} Request-Example:
+     * {
+"current_password":"123456",
+"new_password":"123456",
+"confirm_password":"123456"
+} 
      * @access Private
      * */
 
@@ -288,18 +296,16 @@ DOCTOR
     });
 
 /**
-     * Reset or Change User Password
+     * Email Verification
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{get} /verifyemail Verfiy Email 
-     * @apiName 		Register a Mypulse User
+     * @api 			{get} /api/users/verifyemail/{Hash token} Verify Email 
+     * @apiName 		Verify Email
      * @apiGroup 		User
-     * @apiDescription  Verify Email from mail change status of email status in user table, 
-     *                  
-     *
+     * @apiDescription  Verify Email from mail change status of email status in user table,
      * @apiPermission 	None
      * @access Public
      * */
@@ -335,19 +341,25 @@ DOCTOR
     });
 
     /**
-     * Login api
+     * Login
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /login user login
-     * @apiName 		Login a Mypulse User
+     * @api 			{post} /api/users/login user login
+     * @apiName 		Login a Mypulse User[ALL Users]
      * @apiGroup 		User
      * @apiDescription  Login with user_email , mobile and password and get a JWT token
-     *                  
-     *
-     * @apiPermission 	None
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiParam        {String} user_email Email/Phone Number
+     * @apiParam        {String} user_password Password
+     * @apiParamExample {json} Request-Example:
+     * {
+        "user_email": "sabarish3012@gmail.com",
+        "user_password" : "123456"
+        }         
      * @access Public
      * */
 
@@ -413,13 +425,12 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{get} /byid user login
+     * @api 			{get} /api/users/byid user login
      * @apiName 		Get Current User details
      * @apiGroup 		User
-     * @apiDescription  Login with user_email , mobile and password and get a JWT token
-     *                  
-     *
-     * @apiPermission 	None
+     * @apiDescription  Get User Details 
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
      * @access Public
      * */
 
@@ -438,23 +449,39 @@ DOCTOR
     });
 
     /**
-     * Mypulse User Basic Info api
+     * Create Mypulse User Basic Info
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /basicinfo My pulse user Basic info
+     * @api 			{post} /api/users/basicinfo My pulse user Basic info
      * @apiName 		Mypulse User Basic info 
      * @apiGroup 		User
      * @apiDescription  Mypulse User Basic info insert or Update
-     *                  
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiParam        {String} user_first_name 
+     * @apiParam        {String} user_last_name
+     * @apiParam        {String} user_last_name
+     * @apiParam        {String} user_description
+     * @apiParam        {String} user_email
+     * @apiParam        {String} user_mobile
+     * @apiParam        {Number} status 1/0
+     * @apiParamExample {json} Request-Example:
+     * {
+            "user_first_name": "sabarish",
+            "user_last_name":"K",
+            "user_description":"mypukse userds",
+            "user_email":"sabarish3012@gmail.com",
+            "user_mobile":"9739551587",
+            "status":1
+        }         
      *
-     * @apiPermission 	auth
      * @access Private
      * */
     router.post('/basicinfo',auth,[
-        check('user_first_name' , 'Please include a valid email').not().isEmpty(),
+        check('user_first_name' , 'Please fill in first name').not().isEmpty(),
     ], async (req,res) =>{ 
         const errors= validationResult(req);
         if(!errors.isEmpty()){
@@ -523,13 +550,31 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /generalinfo My pulse user Genaral info
+     * @api 			{post} /api/users/generalinfo My pulse user Genaral info
      * @apiName 		Mypulse User Genaral info 
      * @apiGroup 		User
      * @apiDescription  Mypulse User Genaral info insert or Update
-     *                  
-     *
-     * @apiPermission 	auth
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiParam        {String} user_gender ['M', 'F','O']
+     * @apiParam        {String} user_dob
+     * @apiParam        {String} address
+     * @apiParam        {String} user_profile_picture
+     * @apiParam        {Number} country_id
+     * @apiParam        {Number} state_id
+     * @apiParam        {Number} district_id
+     * @apiParam        {Number} city_id
+     * @apiParamExample {json} Request-Example:
+     * {
+            "user_gender":"M",
+            "user_dob":"1992-12-30",
+            "address":"72 angavarpalaya",
+            "user_profile_picture":"test",
+            "country_id":1,
+            "state_id":1,
+            "district_id":1,
+            "city_id":1
+        }
      * @access Private
      * */
     router.post('/generalinfo',auth,[
@@ -624,13 +669,38 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /generalinfo My pulse user medicalinfo info
+     * @api 			{post} /api/users/medicalinfo My pulse user medicalinfo info
      * @apiName 		Mypulse User medicalinfo
      * @apiGroup 		User
      * @apiDescription  Mypulse User medicalinfo insert or Update
-     *                  
-     *
-     * @apiPermission 	auth
+     * @apiHeader       {String} Content-Type application/json
+     * @apiParam        {String} patient_type
+     * @apiParam        {String} in_time
+     * @apiParam        {String} account_opening_timestamp
+     * @apiParam        {String} aadhar
+     * @apiParam        {Float} height
+     * @apiParam        {Float} weight
+     * @apiParam        {Float} blood_pressure
+     * @apiParam        {Float} sugar_level
+     * @apiParam        {Number} health_insurance_provider
+     * @apiParam        {Number} family_history
+     * @apiParam        {Number} past_medical_history
+     * @apiParamExample {json} Request-Example:
+     * {
+            "patient_type":"",
+            "blood_group":"",
+            "in_time":"",
+            "account_opening_timestamp":"",
+            "aadhar":"",
+            "height":"",
+            "weight":"",
+            "blood_pressure":"",
+            "sugar_level":"",
+            "health_insurance_provider":"",
+            "health_insurance_id":"",
+            "family_history":"",
+            "past_medical_history:""
+        }
      * @access Private
      * */
     router.post('/medicalinfo',auth
