@@ -4,9 +4,6 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 const {check, validationResult} = require('express-validator');
-const gravatar = require('gravatar');
-const bcrypt = require('bcryptjs');
-const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 var md5 = require('md5');
 const auth = require('../../middleware/auth');
@@ -34,6 +31,7 @@ var poolReplica = db.getConnectionReplica();
      * */
 
     router.post('/create',[
+        check('user_role' , 'Role is required').not().isEmpty(),
         check('user_first_name' , 'Name is required').not().isEmpty(),
         check('user_email' , 'Please include a valid email').isEmail(),
         check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
@@ -71,7 +69,7 @@ var poolReplica = db.getConnectionReplica();
             // Check user already exists
 
             let rows = null;
-            [rows] =await pool.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
+            [rows] =await poolReplica.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
                 user_email,
                 user_mobile,
                 user_password
@@ -87,7 +85,7 @@ var poolReplica = db.getConnectionReplica();
 
             // console.log(md5(user_password + config.get('passwordHash')));
             // get last unique ID
-            [rows] = await pool.query(`select user_unique_id from users 
+            [rows] = await poolReplica.query(`select user_unique_id from users 
             where user_role=? order by id desc limit 1`,
             [ user_role ]);
 
@@ -132,7 +130,7 @@ var poolReplica = db.getConnectionReplica();
             const [results]= await pool.query(sql);
 
             if(results){
-                [rows] = await pool.query(`select id from roles where
+                [rows] = await poolReplica.query(`select id from roles where
                 role_code=? limit 1`,
                 [ config.get('uniqueCodePrefix')[user_role] ]);
 
@@ -243,7 +241,7 @@ var poolReplica = db.getConnectionReplica();
         confirm_password = md5(confirm_password + config.get('passwordHash'));
         
         try {
-            let [rows] = await pool.query(`select id from users where
+            let [rows] = await poolReplica.query(`select id from users where
             id=? and user_password=? limit 1`,
             [ req.user.id, current_password ]);
 
@@ -292,7 +290,7 @@ var poolReplica = db.getConnectionReplica();
             // Decode the JWT hash 
             const decoded= jwt.verify(token,config.get('jwtSecret'));
             // Assaign the req.user to parsed output
-            let [rows ] = await pool.query(`select id from users where
+            let [rows ] = await poolReplica.query(`select id from users where
                 id=? limit 1`,
                 [ decoded.id ]);
                 if(rows.length > 0){
@@ -407,7 +405,7 @@ var poolReplica = db.getConnectionReplica();
     router.get('/byid', auth ,async (req,res) =>{ 
         // Validate error which takes a req object 
         try {
-            let [rows ] = await pool.query(`SELECT * from get_mypulse_users WHERE user_id=? limit 1`,[ req.user.id]);
+            let [rows ] = await poolReplica.query(`SELECT * from get_mypulse_users WHERE user_id=? limit 1`,[ req.user.id]);
                 if(rows.length > 0){
                     res.send(rows[0]);
                 }else{

@@ -4,9 +4,6 @@ const express = require('express');
 const router = express.Router();
 const config = require('config');
 const {check, validationResult} = require('express-validator');
-const gravatar = require('gravatar');
-const bcrypt = require('bcryptjs');
-const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
 var md5 = require('md5');
 const auth = require('../../middleware/auth');
@@ -78,7 +75,7 @@ var poolReplica = db.getConnectionReplica();
                 return res.status(400).json({errors : [ { message : 'Email already taken'}]});
             }
 
-            [rows] = await pool.query(`select user_unique_id from users 
+            [rows] = await poolReplica.query(`select user_unique_id from users 
             where user_role=? order by id desc limit 1`,
             [ user_role ]);
 
@@ -118,7 +115,7 @@ var poolReplica = db.getConnectionReplica();
             const [results]= await pool.query(sql);
 
             if(results){
-                [rows] = await pool.query(`select id from roles where
+                [rows] = await poolReplica.query(`select id from roles where
                 role_code=? limit 1`,
                 [ config.get('uniqueCodePrefix')[user_role] ]);
 
