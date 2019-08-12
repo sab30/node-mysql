@@ -1,5 +1,5 @@
 {
-    "url": "http://localhost:5000",
+    "url": "http://ec2-13-233-184-253.ap-south-1.compute.amazonaws.com",
     "localhost" :{
         "host"     : "localhost",
         "user"     : "root",
