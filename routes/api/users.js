@@ -13,14 +13,93 @@ var db = require('../../config/db');
 var pool = db.getConnection();
 var poolReplica = db.getConnectionReplica();
 
-  /**
-     * Creates a User or Registration
+  
+
+/**
+     * Reset or Change User Password
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/users/create Create or Register a User
+     * @api 			{put} /api/users/password Reset User Password
+     * @apiName 		Register a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Update or change Pasword, 
+* @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * @apiHeader       {String} authorization The user’s JWT
+     * @apiParam        {String} current_password User Name
+     * @apiParam        {String} new_password Email for login in
+     * @apiParam        {String} confirm_password Users Password
+     * @apiParamExample {json} Request-Example:
+     * {
+"current_password":"123456",
+"new_password":"123456",
+"confirm_password":"123456"
+} 
+     * @access Private
+     * */
+
+    router.put('/password',auth,[
+        check('current_password' , 'Please enter a password with 6 or more chrachters').isLength({
+            min:6
+        }),
+        check('new_password' , 'Please enter a new password').isLength({
+            min:6
+        }),
+        check('confirm_password' , 'Please enter a password with 6 or more chrachters for confirm password').isLength({
+            min:6
+        })
+    ], async (req,res) =>{
+
+
+        let { current_password, new_password,  confirm_password} = req.body;
+
+        if(new_password != confirm_password){
+            return res.status(500).json({errors : [ { message : 'confirm password is wrong'}]});
+        }
+
+        current_password= md5(current_password + config.get('passwordHash'));
+        new_password= md5(new_password + config.get('passwordHash'));
+        confirm_password = md5(confirm_password + config.get('passwordHash'));
+        
+        try {
+            let [rows] = await poolReplica.query(`select id from users where
+            id=? and user_password=? limit 1`,
+            [ req.user.id, current_password ]);
+
+            if(rows.length > 0){
+                // Update Password if user exist
+
+                [rows ] = await pool.query(`update users SET user_password=?,
+                modified_by=? ,modified_at=now() where id=? `, [ new_password,req.user.id,req.user.id]);
+
+                if(rows){
+                    res.send({results :{ status : 'password changed' } });
+                }else{
+                    return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                }
+
+            }else{
+                return res.status(400).json({errors : [ { message : 'password didnt match'}]});
+            }
+          } catch (e) {
+              console.error(e);
+            return res.status(500).json({errors : 'Internal server error'});
+          }
+    });
+
+
+    /**
+     * User Registration
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /api/users/create Register Mypulse User
      * @apiName 		Register a Mypulse User
      * @apiGroup 		User
      * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
@@ -28,15 +107,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
      * @apiHeader       {String} authorization The user’s JWT
-     * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,
-RECEPTIONIST,
-NURSE,
-MYPULSE_USER,
-MEDICAL_STORE,
-MEDICAL_LAB,
-HOSPITAL_ADMIN,
-DOCTOR
-] 
+     * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,RECEPTIONIST,NURSE,MYPULSE_USER,MEDICAL_STORE,MEDICAL_LAB,HOSPITAL_ADMIN,DOCTOR] 
      * @apiParam        {String} user_first_name User Name
      * @apiParam        {String} user_email Email for login in
      * @apiParam        {String} user_password Users Password
@@ -47,8 +118,7 @@ DOCTOR
             "user_password": "123456",
             "user_role":"MYPULSE_USER"
         }     
-     *
-     * @access Private
+     * @access Public
      * */
 
     router.post('/create',[
@@ -217,85 +287,6 @@ DOCTOR
             console.error(error);
             return res.status(400).json({errors : error});
         }
-    }
-    )
-
-
-/**
-     * Reset or Change User Password
-     * 
-     * @param {object} req The request object
-     * @param {object} res The response object
-     * @author Sabarish <sabarish3012@gmail.com>
-     * 
-     * @api 			{put} /api/users/password Reset User Password
-     * @apiName 		Register a Mypulse User
-     * @apiGroup 		User
-     * @apiDescription  Update or change Pasword, 
-* @apiPermission 	auth,JWT
-     * @apiHeader       {String} Content-Type application/json
-     * @apiHeader       {String} x-auth-token JWT token from login API
-     * 
-     * @apiHeader       {String} authorization The user’s JWT
-     * @apiParam        {String} current_password User Name
-     * @apiParam        {String} new_password Email for login in
-     * @apiParam        {String} confirm_password Users Password
-     * @apiParamExample {json} Request-Example:
-     * {
-"current_password":"123456",
-"new_password":"123456",
-"confirm_password":"123456"
-} 
-     * @access Private
-     * */
-
-    router.put('/password',auth,[
-        check('current_password' , 'Please enter a password with 6 or more chrachters').isLength({
-            min:6
-        }),
-        check('new_password' , 'Please enter a new password').isLength({
-            min:6
-        }),
-        check('confirm_password' , 'Please enter a password with 6 or more chrachters for confirm password').isLength({
-            min:6
-        })
-    ], async (req,res) =>{
-
-
-        let { current_password, new_password,  confirm_password} = req.body;
-
-        if(new_password != confirm_password){
-            return res.status(500).json({errors : [ { message : 'confirm password is wrong'}]});
-        }
-
-        current_password= md5(current_password + config.get('passwordHash'));
-        new_password= md5(new_password + config.get('passwordHash'));
-        confirm_password = md5(confirm_password + config.get('passwordHash'));
-        
-        try {
-            let [rows] = await poolReplica.query(`select id from users where
-            id=? and user_password=? limit 1`,
-            [ req.user.id, current_password ]);
-
-            if(rows.length > 0){
-                // Update Password if user exist
-
-                [rows ] = await pool.query(`update users SET user_password=?,
-                modified_by=? ,modified_at=now() where id=? `, [ new_password,req.user.id,req.user.id]);
-
-                if(rows){
-                    res.send({results :{ status : 'password changed' } });
-                }else{
-                    return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
-                }
-
-            }else{
-                return res.status(400).json({errors : [ { message : 'password didnt match'}]});
-            }
-          } catch (e) {
-              console.error(e);
-            return res.status(500).json({errors : 'Internal server error'});
-          }
     });
 
 /**
@@ -305,7 +296,7 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{get} /api/users/verifyemail/{Hash token} Verify Email 
+     * @api 			{get} /api/users/verifyemail/Hash-token-from-mail
      * @apiName 		Verify Email
      * @apiGroup 		User
      * @apiDescription  Verify Email from mail change status of email status in user table,
@@ -350,7 +341,7 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/users/login user login
+     * @api 			{post} /api/users/login User login
      * @apiName 		Login a Mypulse User[ALL Users]
      * @apiGroup 		User
      * @apiDescription  Login with user_email , mobile and password and get a JWT token
@@ -430,7 +421,7 @@ DOCTOR
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{get} /api/users/byid user login
+     * @api 			{get} /api/users/byid User By Id
      * @apiName 		Get Current User details
      * @apiGroup 		User
      * @apiDescription  Get User Details 
