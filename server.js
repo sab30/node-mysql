@@ -20,8 +20,8 @@ const PORT = process.env.PORT || 5000;
 
 //Sample endpoint , callback with req, resoponse
 app.get('/', (req,res) => res.send('API Running....'));
-
 // DEFINE AND ACCESS THE ROUTES
+app.use('/api/docs', require('./routes/api/docs'));
 app.use('/api/users', require('./routes/api/users'));
 app.use('/api/hospital', require('./routes/api/hospital'));
 // app.use('/api/profile', require('./routes/api/profile'));

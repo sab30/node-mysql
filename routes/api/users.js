@@ -26,6 +26,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiDescription  Create or Register a User for all the Mypulse Roles ex: Super Admin, 
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
      * @apiHeader       {String} authorization The user’s JWT
      * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,
 RECEPTIONIST,
@@ -233,6 +234,8 @@ DOCTOR
      * @apiDescription  Update or change Pasword, 
 * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @apiHeader       {String} authorization The user’s JWT
      * @apiParam        {String} current_password User Name
      * @apiParam        {String} new_password Email for login in
@@ -353,6 +356,8 @@ DOCTOR
      * @apiDescription  Login with user_email , mobile and password and get a JWT token
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @apiParam        {String} user_email Email/Phone Number
      * @apiParam        {String} user_password Password
      * @apiParamExample {json} Request-Example:
@@ -431,6 +436,8 @@ DOCTOR
      * @apiDescription  Get User Details 
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @access Public
      * */
 
@@ -461,6 +468,8 @@ DOCTOR
      * @apiDescription  Mypulse User Basic info insert or Update
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @apiParam        {String} user_first_name 
      * @apiParam        {String} user_last_name
      * @apiParam        {String} user_last_name
@@ -556,6 +565,8 @@ DOCTOR
      * @apiDescription  Mypulse User Genaral info insert or Update
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @apiParam        {String} user_gender ['M', 'F','O']
      * @apiParam        {String} user_dob
      * @apiParam        {String} address
@@ -674,6 +685,8 @@ DOCTOR
      * @apiGroup 		User
      * @apiDescription  Mypulse User medicalinfo insert or Update
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
      * @apiParam        {String} patient_type
      * @apiParam        {String} in_time
      * @apiParam        {String} account_opening_timestamp

@@ -1,5 +1,5 @@
 {
-  "name": "MyPulse Nodejs",
+  "name": "MyPulse-Nodejs",
   "version": "1.0.0",
   "description": "Hospital Web APIS Application",
   "main": "server.js",

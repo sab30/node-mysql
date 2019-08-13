@@ -27,6 +27,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiDescription  Create or Register a Hospital for all the Mypulse Roles ex: Super Admin
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
      * @apiParam        {String} user_first_name Hospital Name mapped from here ex: Apollo
      * @apiParam        {String} user_email
      * @apiParam        {String} address
@@ -201,7 +202,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiDescription  Create and Map Branches to hospital , Roles ex: Super Admin
      *                  
      *
-     * @apiPermission 	None
+     * @apiPermission 	Nones
      * @access Private
      * */
 
