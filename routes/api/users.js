@@ -35,10 +35,10 @@ var poolReplica = db.getConnectionReplica();
      * @apiParam        {String} confirm_password Users Password
      * @apiParamExample {json} Request-Example:
      * {
-"current_password":"123456",
-"new_password":"123456",
-"confirm_password":"123456"
-} 
+        "current_password":"123456",
+        "new_password":"123456",
+        "confirm_password":"123456"
+        }
      * @access Private
      * */
 
