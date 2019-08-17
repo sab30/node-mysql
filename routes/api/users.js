@@ -9,7 +9,7 @@ var md5 = require('md5');
 const auth = require('../../middleware/auth');
 //https://github.com/sidorares/node-mysql2/blob/master/examples/promise-co-await/await.js
 var db = require('../../config/db');
-
+const moment = require('moment');
 var pool = db.getConnection();
 var poolReplica = db.getConnectionReplica();
 
@@ -199,16 +199,18 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} x-auth-token JWT token from login API
      * @apiHeader       {String} authorization The user’s JWT
      * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,RECEPTIONIST,NURSE,MYPULSE_USER,MEDICAL_STORE,MEDICAL_LAB,HOSPITAL_ADMIN,DOCTOR] 
-     * @apiParam        {String} user_first_name User Name
+     * @apiParam        {String} first_name User Name
      * @apiParam        {String} user_email Email for login in
      * @apiParam        {String} user_password Users Password
+     * @apiParam        {String} user_mobile Users Mobile
      * @apiParamExample {json} Request-Example:
      * {
-            "user_first_name" :"sabkashyap",
-            "user_email" : "sabarishkashyap567@gmail.com",
+            "first_name" :"Sabarish",
+            "user_email" : "sabarish3012@gmail.com",
             "user_password": "123456",
-            "user_role":"MYPULSE_USER"
-        }     
+            "user_role":"MYPULSE_USER",
+            "user_mobile":"1234567890"
+        }   
      * @access Public
      * */
 
@@ -219,7 +221,7 @@ var poolReplica = db.getConnectionReplica();
         check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
             min:6
         }),
-        check('user_mobile' , 'Enter mobile number').not().isEmpty().isLength({
+        check('user_mobile' , 'Enter mobile number').isLength({
             min:10
         })
     ], async (req,res) =>{ 
@@ -232,7 +234,9 @@ var poolReplica = db.getConnectionReplica();
         }
     
         // Check User Exists
-        let {user_email , 
+        let {
+            first_name,
+            user_email , 
             user_password, 
             user_mobile ,
             user_role
@@ -269,14 +273,14 @@ var poolReplica = db.getConnectionReplica();
 
             // console.log(user_unique_id);
             // console.log(config.get('uniqueCodePrefix')[user_role] + '_' + user_unique_id.toString());
-
-
-            user_unique_id = config.get('uniqueCodePrefix')[user_role] + "_" + user_unique_id.toString()
+            const UtilsService = require('./services/UtilsService');
+            let year = moment().format('YY');
+            let nextUniqueId = UtilsService.getNextUniqueId(user_unique_id);
+            user_unique_id = config.get('uniqueCodePrefix')[user_role] + year +"_" + nextUniqueId;
             // Create the user
 
             let values = {
                 user_unique_id : user_unique_id,
-                user_first_name : user_first_name ? user_first_name: null,
                 user_password  : md5(user_password + config.get('passwordHash')),
                 user_email : user_email,
                 created_by : 99,
@@ -294,15 +298,27 @@ var poolReplica = db.getConnectionReplica();
                 [ config.get('uniqueCodePrefix')[user_role] ]);
 
                 if(rows.length > 0){
-                    let row = results[0];
+
+                    let values= {
+                        first_name : first_name,
+                        user_id : results.insertId,
+                        created_by : 99,
+                    }
+
+
+                    let sql= pool.format(`insert into users_info SET ? `, values);
+                    //console.log(sql);
+                    [row]= await pool.query(sql);
+                    // console.log(row);
+
                     // Map role to user
-                    let values={
+                    values={
                         user_id : results.insertId, 
                         role_id : rows[0].id,
                         created_by : results.insertId
                     }
 
-                    let sql= pool.format(`insert into user_role SET ? `, values);
+                    sql= pool.format(`insert into user_role SET ? `, values);
                     [rows]= await pool.query(sql);
                     if([rows]){
                         //Send Email 
