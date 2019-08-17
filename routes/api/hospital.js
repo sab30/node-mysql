@@ -37,17 +37,17 @@ var poolReplica = db.getConnectionReplica();
      * @apiParam        {String} status [1- Active. 0 - Inactive]
      * @apiParam        {String} address
      * @apiParamExample {json} Request-Example:
-     * {
-	    "user_role":"HOSPITAL_ADMIN",
-        "first_name":"sabarish",
-        "last_name":"K",
-        "description":"test",
-        "user_email":"sabairh3012@gmail.com",
-        "user_mobile":"9797907098",
-        "hospital_id":"1", 
-        "status" : 1,
-        "address" : "213213"
-}
+     *  {
+            "user_role":"HOSPITAL_ADMIN",
+            "first_name":"sabarish",
+            "last_name":"K",
+            "description":"test",
+            "user_email":"sabairh3012@gmail.com",
+            "user_mobile":"9797907098",
+            "hospital_id":"1", 
+            "status" : 1,
+            "address" : "213213"
+        }
      * @access Private
      * */
 
@@ -141,6 +141,42 @@ var poolReplica = db.getConnectionReplica();
     });
 
   
+/**
+     * Hospital Asmin Create with Basic info
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /api/hospital/create/admi Create or Register a Hospital Admin
+     * @apiName 		Register a Hospital
+     * @apiGroup 		Hospital
+     * @apiDescription  Create or Register a Hospital for all the Mypulse Roles ex: Super Admin
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * @apiParam        {String} user_role
+     * @apiParam        {String} first_name
+     * @apiParam        {String} last_name
+     * @apiParam        {String} user_email
+     * @apiParam        {String} user_mobile
+     * @apiParam        {String} hospital_id
+     * @apiParam        {String} status [1- Active. 0 - Inactive]
+     * @apiParam        {String} address
+     * @apiParamExample {json} Request-Example:
+     *  {
+            "user_role":"HOSPITAL_ADMIN",
+            "first_name":"sabarish",
+            "last_name":"K",
+            "description":"test",
+            "user_email":"sabairh3012@gmail.com",
+            "user_mobile":"9797907098",
+            "hospital_id":"1", 
+            "status" : 1,
+            "address" : "213213"
+        }
+     * @access Private
+     * */
 
     router.post('/create/admin',auth,[
         check('user_role' , 'Role is required').not().isEmpty(),
@@ -199,18 +235,20 @@ var poolReplica = db.getConnectionReplica();
             [rows] = await poolReplica.query(`select user_unique_id from users 
             where user_role=? order by id desc limit 1`,
             [ user_role ]);
-            
+            console.log(rows);
             if(rows.length > 0){
                 user_unique_id=  parseInt(rows[0].user_unique_id.split('_')[1]) + 1;
             }else{
                 user_unique_id=  config.get('uniqueStartNumber') + 1;
             }
+            console.log(user_unique_id);
 
             const UtilsService = require('./services/UtilsService');
             let year = moment().format('YY');
             let nextUniqueId = UtilsService.getNextUniqueId(user_unique_id);
             user_unique_id = config.get('uniqueCodePrefix')[user_role] + year +"_" + nextUniqueId;
 
+            console.log(user_unique_id);
             // Create the user
             let values = {
                 user_unique_id : user_unique_id,
@@ -228,12 +266,12 @@ var poolReplica = db.getConnectionReplica();
                 [rows] = await poolReplica.query(`select id from roles where
                 role_code=? limit 1`,
                 [ config.get('uniqueCodePrefix')[user_role] ]);
-
+                console.log(rows);
                 if(rows.length > 0){
                     // Map role to user
                     let values={
-                        user_id : rows[0].insertId,
-                        role_id : user_id,
+                        user_id : user_id,
+                        role_id : rows[0].id,
                         created_by : req.user.id
                     }
                     let sql= pool.format(`insert into user_role SET ? `, values);
@@ -306,9 +344,200 @@ var poolReplica = db.getConnectionReplica();
             console.error(errors);
             return res.status(400).json({errors : errors});
         }
-    }
-    );
+    });
 
+    /**
+     * Mypulse User Genaral Info api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /api/hospital/admin/generalinfo My pulse user Genaral info
+     * @apiName 		Mypulse User Genaral info 
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User Genaral info insert or Update
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
+     * @apiParam        {String} gender ['M', 'F','O']
+     * @apiParam        {String} dob
+     * @apiParam        {String} address
+     * @apiParam        {String} user_profile_picture
+     * @apiParam        {Number} country_id
+     * @apiParam        {Number} state_id
+     * @apiParam        {Number} district_id
+     * @apiParam        {Number} city_id
+     * @apiParamExample {json} Request-Example:
+     * {
+            "gender":"M",
+            "dob":"1992-12-30",
+            "address":"72 angavarpalaya",
+            "user_profile_picture":"test",
+            "country_id":1,
+            "state_id":1,
+            "district_id":1,
+            "city_id":1
+        }
+     * @access Private
+     * */
+    router.post('/admin/generalinfo',auth,[
+        check('dob').toDate(),
+        check('gender').isIn(['M', 'F','O'])
+    ], async (req,res) =>{ 
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+        let {
+            gender,
+            dob,
+            address,
+            user_profile_picture,
+            country_id,
+            state_id,
+            district_id,
+            city_id,
+         } = req.body;
+         
+
+        gender = gender ? gender: null;
+        dob = dob ? dob: null;
+        address = address ? address : null;
+        user_profile_picture = user_profile_picture ? user_profile_picture : null;
+        country_id = country_id ? country_id : null; 
+        state_id = state_id ? state_id : null; 
+        district_id = district_id ? district_id : null; 
+        city_id = city_id ? city_id : null;
+
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  user_id 
+             FROM
+                 hospital_admins
+             WHERE
+             user_id=? limit 1`,
+             [ req.user.id]);
+             let [rows ] = await pool.query(sql);
+                 if(rows.length > 0){
+                     // Update User Data
+                     let sql = pool.format(`update hospital_admins SET
+                     gender =?,
+                     dob =?,
+                     address =?,
+                     user_profile_picture=?,
+                     country_id =?,
+                     state_id =?,
+                     district_id =?,
+                     city_id =?,
+                     modified_by=? ,
+                     modified_at=now() 
+                     where user_id=? `, 
+                     [ 
+                        gender,
+                        dob,
+                        address,
+                        user_profile_picture,
+                        country_id,
+                        state_id,
+                        district_id,
+                        city_id,
+                        req.user.id,
+                        req.user.id
+                     ]);
+                     [ rows ] = await pool.query(sql);
+                     if(rows){
+                         res.send({results : 'HA general info Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                     }
+                 }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                 }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+    });
+
+    /**
+     * Mypulse User Genaral Info api
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /api/hospital/admin/generalinfo My pulse user Genaral info
+     * @apiName 		Mypulse User Genaral info 
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User Genaral info insert or Update
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
+     * @apiParam        {String} qualification
+     * @apiParam        {String} profession
+     * @apiParam        {String} experience
+     * @apiParamExample {json} Request-Example:
+     * {
+            "qualification":"Bcom",
+            "profession":"Admin",
+            "experience":"1 year "
+        }
+     * @access Private
+     * */
+    router.post('/admin/professionalinfo',auth, async (req,res) =>{ 
+
+        let {
+            qualification,profession,experience
+         } = req.body;
+         
+         qualification = qualification ? qualification : null ;
+         profession = profession ? profession : null;
+         experience = experience ? experience : null;
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  user_id 
+             FROM
+                 hospital_admins
+             WHERE
+             user_id=? limit 1`,
+             [ req.user.id]);
+             let [rows ] = await pool.query(sql);
+                 if(rows.length > 0){
+                     // Update User Data
+                     let sql = pool.format(`update hospital_admins SET
+                     qualification =?,
+                     profession =?,
+                     experience =?,
+                     modified_by=? ,
+                     modified_at=now() 
+                     where user_id=? `, 
+                     [ 
+                        qualification,
+                        profession,
+                        experience,
+                        req.user.id,
+                        req.user.id
+                     ]);
+                     [ rows ] = await pool.query(sql);
+                     if(rows){
+                         res.send({results : 'HA professional info Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
+                     }
+                 }else{
+                     return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                 }
+        } catch (error) {
+            console.error(error);
+            res.status(401).json({msg: error});
+        }
+    });
 
 
     module.exports = router;
