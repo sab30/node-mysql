@@ -92,6 +92,97 @@ var poolReplica = db.getConnectionReplica();
     });
 
 
+
+
+/**
+     * Reset or Change User Password
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{put} /api/users/password Reset User Password
+     * @apiName 		Register a Mypulse User
+     * @apiGroup 		User
+     * @apiDescription  Update or change Pasword, 
+* @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * @apiHeader       {String} authorization The user’s JWT
+     * @apiParam        {String} current_password User Name
+     * @apiParam        {String} new_password Email for login in
+     * @apiParam        {String} confirm_password Users Password
+     * @apiParamExample {json} Request-Example:
+     * {
+        "current_password":"123456",
+        "new_password":"123456",
+        "confirm_password":"123456"
+        }
+     * @access Private
+     * */
+
+    router.put('/basicinfo',auth,[
+        check('first_name' , 'First Name is required').not().isEmpty(),
+    ], async (req,res) =>{
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+        try {
+            let [rows] = await poolReplica.query(`select id from users where
+            id=? limit 1`,
+            [ req.user.id ]);
+
+            let {
+                first_name,
+                last_name,
+                description
+            } = req.body;
+
+            if(rows.length > 0){
+                // Update Password if user exist
+
+                [rows ] = await pool.query(`update users_info SET 
+                first_name=?,
+                last_name=?,
+                description=?
+                modified_by=? ,
+                modified_at=now() 
+                where user_id=? `, 
+                [ new_password,req.user.id,req.user.id]);
+
+                if(rows){
+                    res.send({results :{ status : 'User Basic info updated.' } });
+                }else{
+                    return res.status(400).json({errors : [ { message : 'Unable to update'}]});
+                }
+
+            }else{
+                // Insert Basic info Details
+                let values = {
+                    first_name : first_name ? first_name: null,
+                    last_name : last_name ? last_name: null,
+                    description : description ? description: null,
+                    created_by: req.user.id
+                };
+    
+                let sql= pool.format(`insert into users_info SET ? `, values);
+                //console.log(sql);
+                [rows]= await pool.query(sql);
+                if(rows){
+                    res.send({results :{ status : 'User Basic info updated.' } });
+                }else{
+                    return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
+                }
+
+            }
+          } catch (e) {
+            console.error(e);
+            return res.status(500).json({errors : 'Internal server error'});
+          }
+    });
+
     /**
      * User Registration
      * 
@@ -123,10 +214,13 @@ var poolReplica = db.getConnectionReplica();
 
     router.post('/create',[
         check('user_role' , 'Role is required').not().isEmpty(),
-        check('user_first_name' , 'Name is required').not().isEmpty(),
+        check('first_name' , 'Name is required').not().isEmpty(),
         check('user_email' , 'Please include a valid email').isEmail(),
         check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
             min:6
+        }),
+        check('user_mobile' , 'Enter mobile number').not().isEmpty().isLength({
+            min:10
         })
     ], async (req,res) =>{ 
 
@@ -138,22 +232,9 @@ var poolReplica = db.getConnectionReplica();
         }
     
         // Check User Exists
-        let {user_email , user_password, user_mobile ,
-            user_unique_id,
-            user_first_name,
-            user_last_name,
-            user_gender,
-            user_dob,
-            longitude,
-            latitude,
-            address,
-            aadhar,
-            qualification,
-            profession,
-            specializations,
-            owner_name,
-            owner_mobile,
-            experience,
+        let {user_email , 
+            user_password, 
+            user_mobile ,
             user_role
         } = req.body;
         try {
@@ -196,22 +277,9 @@ var poolReplica = db.getConnectionReplica();
             let values = {
                 user_unique_id : user_unique_id,
                 user_first_name : user_first_name ? user_first_name: null,
-                user_last_name : user_last_name ? user_last_name: null,
-                user_gender : user_gender ? user_gender: null,
-                user_dob : user_dob ? user_dob: null,
-                latitude : latitude ? latitude: null,
-                longitude : longitude ? longitude: null,
                 user_password  : md5(user_password + config.get('passwordHash')),
                 user_email : user_email,
                 created_by : 99,
-                address : address ? address : '',
-                aadhar : aadhar ? aadhar : null,
-                qualification : qualification ? qualification : null,
-                profession : profession ? profession : null,
-                specializations : specializations ? specializations : null,
-                owner_name : owner_name ? owner_name : null,
-                owner_mobile : owner_mobile ? owner_mobile : null,
-                experience : experience ? experience : null,
                 user_role : user_role ? user_role : null,
             };
 
@@ -360,10 +428,8 @@ var poolReplica = db.getConnectionReplica();
      * */
 
     router.post('/login',[
-        check('user_email' , 'Please include a valid email').not().isEmpty(),
-        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
-            min:6
-        })
+        check('user_email' , 'Please include a valid email').not().isEmpty().trim(),
+        check('user_password' , 'Please enter a password').isLength({ min: 6 })
     ], async (req,res) =>{ 
         // Validate error which takes a req object 
         const errors= validationResult(req);
@@ -387,6 +453,8 @@ var poolReplica = db.getConnectionReplica();
             WHERE
             (user_email=? or user_mobile=?) and user_password=? limit 1`,
             [ user_email, user_email, md5(user_password + config.get('passwordHash'))]);
+
+            console.log(sql);
 
             let [rows ] = await pool.query(sql);
 
@@ -461,79 +529,72 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
      * 
-     * @apiParam        {String} user_first_name 
-     * @apiParam        {String} user_last_name
-     * @apiParam        {String} user_last_name
-     * @apiParam        {String} user_description
-     * @apiParam        {String} user_email
-     * @apiParam        {String} user_mobile
-     * @apiParam        {Number} status 1/0
+     * @apiParam        {String} first_name Mandatory 
+     * @apiParam        {String} last_name
+     * @apiParam        {String} description
      * @apiParamExample {json} Request-Example:
      * {
-            "user_first_name": "sabarish",
-            "user_last_name":"K",
-            "user_description":"mypukse userds",
-            "user_email":"sabarish3012@gmail.com",
-            "user_mobile":"9739551587",
-            "status":1
+            "first_name": "sabarish",
+            "last_name":"K",
+            "description":"mypukse users"
         }         
      *
      * @access Private
      * */
     router.post('/basicinfo',auth,[
-        check('user_first_name' , 'Please fill in first name').not().isEmpty(),
+        check('first_name' , 'Please fill in first name').not().isEmpty(),
     ], async (req,res) =>{ 
         const errors= validationResult(req);
         if(!errors.isEmpty()){
             console.error(errors);
             return res.status(400).json({errors : errors.array()});
         }
-
-        let {user_first_name,user_last_name,user_description,user_email,user_mobile,status } = req.body;
-
-            user_first_name = user_first_name ? user_first_name: null;
-            user_last_name = user_last_name ? user_last_name: null;
-            user_description = user_description ? user_description : null;
-            user_email = user_email ? user_email : null; 
-            user_mobile = user_mobile ? user_mobile : null; 
-            status = status ? status : req.user.status;
-
-
+        let {first_name,last_name,description } = req.body;
         try {
              // Check if user exist
              let sql= pool.format(`
              SELECT  id 
              FROM
-                 users
+                 users_info
              WHERE
-             id=? limit 1`,
+             user_id=? limit 1`,
              [ req.user.id]);
  
              let [rows ] = await pool.query(sql);
  
                  if(rows.length > 0){
                      // Update User Data
-                     [ rows ] = await pool.query(`update users SET
-                     user_first_name=?,
-                     user_last_name=?,
-                     user_description=?,
-                     user_email=?,
-                     user_mobile=?,
-                     status=?,
+                     [ rows ] = await pool.query(`update users_info SET
+                     first_name=?,
+                     last_name=?,
+                     description=?,
                      modified_by=? ,
                      modified_at=now() 
-                     where id=? `, 
-                     [ user_first_name,user_last_name,user_description,user_email,user_mobile,status,
-                      req.user.id, req.user.id
+                     where user_id=? `, 
+                     [ first_name,last_name,description,req.user.id, req.user.id
                      ]);
 
                      if(rows){
                          res.send({results : 'User basic info Updated'});
                      }else{
-                         return res.status(400).json({errors : [ { message : 'Unable to verify user'}]});
+                         return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
                      }
                 }else{
-                     return res.status(400).json({errors : [ { message : 'User dosen`t exist' } ]});
+                    let values= {
+                        user_id : req.user.id,
+                        first_name : first_name ,
+                        last_name : last_name ? last_name : null ,
+                        description : description ? description : null,
+                        created_by :  req.user.id
+                    }
+                    let sql= pool.format(`insert into users_info SET ? `, values);
+                //console.log(sql);
+                    [rows]= await pool.query(sql);
+                    if(rows){
+                        res.send({results :{ status : 'User Basic info updated.' } });
+                    }else{
+                        return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
+                    }
                 }
         } catch (error) {
                 console.error(error);
