@@ -28,31 +28,26 @@ var poolReplica = db.getConnectionReplica();
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
-     * @apiParam        {String} user_first_name Hospital Name mapped from here ex: Apollo
+     * @apiParam        {String} user_role
+     * @apiParam        {String} first_name
+     * @apiParam        {String} last_name
      * @apiParam        {String} user_email
+     * @apiParam        {String} user_mobile
+     * @apiParam        {String} hospital_id
+     * @apiParam        {String} status [1- Active. 0 - Inactive]
      * @apiParam        {String} address
-     * @apiParam        {String} description
-     * @apiParam        {String} owner_name
-     * @apiParam        {String} owner_mobile
-     * @apiParam        {Number} country_id
-     * @apiParam        {Number} state_id
-     * @apiParam        {Number} district_id
-     * @apiParam        {Number} city_id
      * @apiParamExample {json} Request-Example:
      * {
-            "user_first_name":"Appolo Cradle",
-            "user_email":"sabarish30121@gmail.com",
-            "user_mobile":"233223223",
-            "address":"2323",
-            "description":"232332323 desc",
-            "owner_name":"Sabarish",
-            "owner_mobile":"98989989898",
-            "city_id":"1",
-            "state_id":"1",
-            "district_id":"1",
-            "country_id":"1",
-            "user_role" :"HOSPITAL"
-        }
+	    "user_role":"HOSPITAL_ADMIN",
+        "first_name":"sabarish",
+        "last_name":"K",
+        "description":"test",
+        "user_email":"sabairh3012@gmail.com",
+        "user_mobile":"9797907098",
+        "hospital_id":"1", 
+        "status" : 1,
+        "address" : "213213"
+}
      * @access Private
      * */
 
