@@ -845,8 +845,6 @@ var poolReplica = db.getConnectionReplica();
             "patient_type":"",
             "blood_group":"",
             "in_time":"",
-            "account_opening_timestamp":"",
-            "aadhar":"",
             "height":"",
             "weight":"",
             "blood_pressure":"",
@@ -854,7 +852,7 @@ var poolReplica = db.getConnectionReplica();
             "health_insurance_provider":"",
             "health_insurance_id":"",
             "family_history":"",
-            "past_medical_history:""
+            "past_medical_history":""
         }
      * @access Private
      * */
@@ -869,8 +867,6 @@ var poolReplica = db.getConnectionReplica();
             patient_type,
             blood_group,
             in_time,
-            account_opening_timestamp,
-            aadhar,
             height,
             weight,
             blood_pressure,
@@ -884,8 +880,6 @@ var poolReplica = db.getConnectionReplica();
          patient_type = patient_type ? patient_type : null;
          blood_group = blood_group ? blood_group : null;
          in_time = in_time ? in_time : null;
-         account_opening_timestamp = account_opening_timestamp ? account_opening_timestamp : null;
-         aadhar = aadhar ? aadhar : null;
          height = height ? height : null;
          weight = weight ? weight : null;
          blood_pressure = blood_pressure ? blood_pressure : null;
@@ -898,24 +892,22 @@ var poolReplica = db.getConnectionReplica();
         try {
              // Check if user exist
              let sql= pool.format(`
-             SELECT  id 
+             SELECT  id , user_id
              FROM
-                 users
+                 users_info
              WHERE
-             id=? limit 1`,
+             user_id=? limit 1`,
              [ req.user.id]);
  
              let [rows ] = await pool.query(sql);
                 //  console.log(rows);
                  if(rows.length > 0){
                      // Update User Data
-                     let sql = pool.format(`update users_medical_info SET
+                     let sql = pool.format(`update users_info SET
                      user_id=?,
                      patient_type=?,
                      blood_group=?,
                      in_time=?,
-                     account_opening_timestamp=?,
-                     aadhar=?,
                      height=?,
                      weight=?,
                      blood_pressure=?,
@@ -932,8 +924,6 @@ var poolReplica = db.getConnectionReplica();
                         patient_type,
                         blood_group,
                         in_time,
-                        account_opening_timestamp,
-                        aadhar,
                         height,
                         weight,
                         blood_pressure,
