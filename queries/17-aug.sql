@@ -502,14 +502,18 @@ DROP TABLE IF EXISTS `hospitals`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `hospitals` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
+  `user_unique_id` varchar(20) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `contact_number` varchar(10) DEFAULT NULL,
+  `address` varchar(10) DEFAULT NULL,
+  `md_name` varchar(50) DEFAULT NULL,
+  `md_contact_number` varchar(15) DEFAULT NULL,
   `description` varchar(250) DEFAULT NULL,
   `city_id` int(11) DEFAULT NULL,
   `district_id` int(11) DEFAULT NULL,
   `state_id` int(11) DEFAULT NULL,
   `country_id` int(11) DEFAULT NULL,
-  `md_name` varchar(50) DEFAULT NULL,
-  `md_contact_number` varchar(15) DEFAULT NULL,
   `license` int(11) NOT NULL,
   `license_status` tinyint(4) NOT NULL DEFAULT '2' COMMENT '1=active,2=inactive',
   `from_date` date DEFAULT NULL,
@@ -519,12 +523,14 @@ CREATE TABLE `hospitals` (
   `modified_by` int(11) DEFAULT NULL,
   `modified_at` timestamp NULL DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1-Active 0-Inactive, 2- deleted',
+  `logo` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `user_unique_id_UNIQUE` (`user_unique_id`),
   KEY `fk_hosp_city` (`city_id`),
   KEY `fk_hosp_dist` (`district_id`),
   KEY `fk_hosp_state` (`state_id`),
   KEY `fk_hosp_ctry` (`country_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -533,6 +539,7 @@ CREATE TABLE `hospitals` (
 
 LOCK TABLES `hospitals` WRITE;
 /*!40000 ALTER TABLE `hospitals` DISABLE KEYS */;
+INSERT INTO `hospitals` VALUES (1,'MPH19_100001','Appollo','sab@123.com','9797979797','test','sab','9898989898','test',1,1,1,1,1,1,'2019-07-11','2019-11-11',8,'2019-08-17 12:20:07',NULL,NULL,1,NULL),(2,'MPH19_100002','Appollo','sab@123.com','9797979797','test','sab','9898989898','test',1,1,1,1,1,1,'2019-07-11','2019-11-11',8,'2019-08-17 12:21:25',NULL,NULL,1,NULL),(3,'MPH19_100003','Appollo','sab@123.com','9797979797','test','sab','9898989898','test',1,1,1,1,1,1,'2019-07-11','2019-11-11',8,'2019-08-17 12:21:46',NULL,NULL,1,NULL),(4,'MPH19_100004','Appollo','sab@123.com','9797979797','test','sab','9898989898','test',1,1,1,1,1,1,'2019-07-11','2019-11-11',8,'2019-08-17 12:22:19',NULL,NULL,1,NULL);
 /*!40000 ALTER TABLE `hospitals` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1224,7 +1231,7 @@ CREATE TABLE `user_role` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_unique_idx` (`user_id`),
   KEY `role_idx` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1233,7 +1240,7 @@ CREATE TABLE `user_role` (
 
 LOCK TABLES `user_role` WRITE;
 /*!40000 ALTER TABLE `user_role` DISABLE KEYS */;
-INSERT INTO `user_role` VALUES (2,6,4,6,'2019-08-10 11:26:35',NULL,NULL,1),(3,7,9,1,'2019-08-11 12:46:55',NULL,NULL,1),(4,8,9,1,'2019-08-11 13:03:15',NULL,NULL,1),(5,9,9,1,'2019-08-11 13:05:17',NULL,NULL,1),(6,10,9,1,'2019-08-11 13:05:55',NULL,NULL,1),(7,11,9,1,'2019-08-11 14:12:13',NULL,NULL,1);
+INSERT INTO `user_role` VALUES (2,6,4,6,'2019-08-10 11:26:35',NULL,NULL,1),(3,7,9,1,'2019-08-11 12:46:55',NULL,NULL,1),(4,8,9,1,'2019-08-11 13:03:15',NULL,NULL,1),(5,9,9,1,'2019-08-11 13:05:17',NULL,NULL,1),(6,10,9,1,'2019-08-11 13:05:55',NULL,NULL,1),(7,11,9,1,'2019-08-11 14:12:13',NULL,NULL,1),(8,16,4,16,'2019-08-17 10:06:16',NULL,NULL,1);
 /*!40000 ALTER TABLE `user_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1263,7 +1270,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `user_email` (`user_email`),
   KEY `user_email_idx` (`user_email`),
   KEY `user_password_idx` (`user_password`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1272,7 +1279,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (6,'MYPULSE_USER','MPU_100002','a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishkashyap567@gmail.com',0,0,99,'2019-08-10 11:26:35',NULL,NULL,1),(7,'MYPULSE_USER','MPH_100001',NULL,'233223223','sabarish30121@gmail.com',0,0,1,'2019-08-11 12:46:55',NULL,NULL,1),(8,'MYPULSE_USER','MPH_100002','a9c7c33c48a8bf53d01b030be54a323b','233223223','sabarish3012@gmail.com',0,0,1,'2019-08-11 13:03:15',NULL,NULL,1),(9,'MYPULSE_USER','MPH_100003',NULL,'233223223','sabarish3012121@gmail.com',0,0,1,'2019-08-11 13:05:17',NULL,NULL,1),(10,'MYPULSE_USER','MPH_100004',NULL,'233223223','sabarish301212111@gmail.com',0,0,1,'2019-08-11 13:05:55',NULL,NULL,1),(11,'MYPULSE_USER','MPH_100005',NULL,'233223223','sabarish301212111ss@gmail.com',0,0,1,'2019-08-11 14:12:13',NULL,NULL,1);
+INSERT INTO `users` VALUES (6,'MYPULSE_USER','MPU_100002','a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishkashyap567@gmail.com',0,0,99,'2019-08-10 11:26:35',NULL,NULL,1),(7,'MYPULSE_USER','MPH_100001',NULL,'233223223','sabarish30121@gmail.com',0,0,1,'2019-08-11 12:46:55',NULL,NULL,1),(8,'MYPULSE_USER','MPH_100002','a9c7c33c48a8bf53d01b030be54a323b','233223223','sasabarish3012@gmail.com',0,0,1,'2019-08-11 13:03:15',NULL,NULL,1),(9,'MYPULSE_USER','MPH_100003',NULL,'233223223','sabarish3012121@gmail.com',0,0,1,'2019-08-11 13:05:17',NULL,NULL,1),(10,'MYPULSE_USER','MPH_100004',NULL,'233223223','sabarish301212111@gmail.com',0,0,1,'2019-08-11 13:05:55',NULL,NULL,1),(11,'MYPULSE_USER','MPH_100005',NULL,'233223223','sabarish301212111ss@gmail.com',0,0,1,'2019-08-11 14:12:13',NULL,NULL,1),(12,'MYPULSE_USER','MPU19_100007','a9c7c33c48a8bf53d01b030be54a323b',NULL,'asd',0,0,99,'2019-08-17 10:00:01',NULL,NULL,1),(13,'MYPULSE_USER','MPU19_100009','a9c7c33c48a8bf53d01b030be54a323b',NULL,'asdas',0,0,99,'2019-08-17 10:00:52',NULL,NULL,1),(14,'MYPULSE_USER','MPU19_100010','a9c7c33c48a8bf53d01b030be54a323b',NULL,'asa',0,0,99,'2019-08-17 10:03:21',NULL,NULL,1),(15,'MYPULSE_USER','MPU19_100011','a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarishssss3012@gmail.com',0,0,99,'2019-08-17 10:04:06',NULL,NULL,1),(16,'MYPULSE_USER','MPU19_100012','a9c7c33c48a8bf53d01b030be54a323b',NULL,'sabarish3012@gmail.com',0,0,99,'2019-08-17 10:06:16',NULL,NULL,1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1318,7 +1325,7 @@ CREATE TABLE `users_info` (
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1-Active 0-Inactive',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_idx` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1327,7 +1334,7 @@ CREATE TABLE `users_info` (
 
 LOCK TABLES `users_info` WRITE;
 /*!40000 ALTER TABLE `users_info` DISABLE KEYS */;
-INSERT INTO `users_info` VALUES (1,8,'raj','ra',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'123456',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,8,'2019-08-17 08:22:05',8,'2019-08-17 08:23:27',1);
+INSERT INTO `users_info` VALUES (1,8,'raj','ra',NULL,NULL,'72 angavarpalaya',1,1,1,1,'123456','M','1992-12-30',NULL,'1','0+',NULL,'5.6','80','123','123','Star Incsurance','12344556','N0','yes','test',8,'2019-08-17 08:22:05',8,'2019-08-17 09:09:38',1),(2,15,'Sabarish',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-17 10:04:06',NULL,NULL,1),(3,16,'Sabarish',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,99,'2019-08-17 10:06:16',NULL,NULL,1);
 /*!40000 ALTER TABLE `users_info` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1375,4 +1382,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-08-17 13:56:07
+-- Dump completed on 2019-08-17 17:57:21
