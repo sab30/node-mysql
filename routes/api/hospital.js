@@ -360,7 +360,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
-     * 
+     * @apiParam        {Number} user_id NULL/Id , in Case Super Admin Edit
      * @apiParam        {String} gender ['M', 'F','O']
      * @apiParam        {String} dob
      * @apiParam        {String} address
@@ -371,6 +371,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiParam        {Number} city_id
      * @apiParamExample {json} Request-Example:
      * {
+            "user_id" : "HA ID",
             "gender":"M",
             "dob":"1992-12-30",
             "address":"72 angavarpalaya",
@@ -392,6 +393,7 @@ var poolReplica = db.getConnectionReplica();
             return res.status(400).json({errors : errors.array()});
         }
         let {
+            user_id,
             gender,
             dob,
             address,
@@ -420,7 +422,7 @@ var poolReplica = db.getConnectionReplica();
                  hospital_admins
              WHERE
              user_id=? limit 1`,
-             [ req.user.id]);
+             [ user_id]);
              let [rows ] = await pool.query(sql);
                  if(rows.length > 0){
                      // Update User Data
@@ -478,11 +480,13 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
      * 
+     * @apiParam        {Number} user_id NULL/Id , in Case Super Admin Edit
      * @apiParam        {String} qualification
      * @apiParam        {String} profession
      * @apiParam        {String} experience
      * @apiParamExample {json} Request-Example:
      * {
+            "user_id" : "HA ID",
             "qualification":"Bcom",
             "profession":"Admin",
             "experience":"1 year "
@@ -492,7 +496,7 @@ var poolReplica = db.getConnectionReplica();
     router.post('/admin/professionalinfo',auth, async (req,res) =>{ 
 
         let {
-            qualification,profession,experience
+            user_id, qualification,profession,experience
          } = req.body;
          
          qualification = qualification ? qualification : null ;
@@ -506,7 +510,7 @@ var poolReplica = db.getConnectionReplica();
                  hospital_admins
              WHERE
              user_id=? limit 1`,
-             [ req.user.id]);
+             [ user_id]);
              let [rows ] = await pool.query(sql);
                  if(rows.length > 0){
                      // Update User Data
