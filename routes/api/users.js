@@ -603,6 +603,96 @@ var poolReplica = db.getConnectionReplica();
     });
 
 
+     /**
+     * Create/Update Mypulse User general Info
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{post} /api/users/generalinfo My pulse user general info
+     * @apiName 		Mypulse User general info 
+     * @apiGroup 		User
+     * @apiDescription  Mypulse User general info insert or Update
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
+     * @apiParam        {String} first_name Mandatory 
+     * @apiParam        {String} last_name
+     * @apiParam        {String} description
+     * @apiParamExample {json} Request-Example:
+     * {
+            "gender": "sabarish",
+            "dob":"K",
+            "address":"mypukse users"
+            "user_profile_picture":"mypukse users",
+        }         
+     *
+     * @access Private
+     * */
+    router.post('/basicinfo',auth,[
+        check('first_name' , 'Please fill in first name').not().isEmpty(),
+    ], async (req,res) =>{ 
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error(errors);
+            return res.status(400).json({errors : errors.array()});
+        }
+        let {first_name,last_name,description } = req.body;
+        try {
+             // Check if user exist
+             let sql= pool.format(`
+             SELECT  id 
+             FROM
+                 users_info
+             WHERE
+             user_id=? limit 1`,
+             [ req.user.id]);
+ 
+             let [rows ] = await pool.query(sql);
+ 
+                 if(rows.length > 0){
+                     // Update User Data
+                     [ rows ] = await pool.query(`update users_info SET
+                     first_name=?,
+                     last_name=?,
+                     description=?,
+                     modified_by=? ,
+                     modified_at=now() 
+                     where user_id=? `, 
+                     [ first_name,last_name,description,req.user.id, req.user.id
+                     ]);
+
+                     if(rows){
+                         res.send({results : 'User basic info Updated'});
+                     }else{
+                         return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
+                     }
+                }else{
+                    let values= {
+                        user_id : req.user.id,
+                        first_name : first_name ,
+                        last_name : last_name ? last_name : null ,
+                        description : description ? description : null,
+                        created_by :  req.user.id
+                    }
+                    let sql= pool.format(`insert into users_info SET ? `, values);
+                //console.log(sql);
+                    [rows]= await pool.query(sql);
+                    if(rows){
+                        res.send({results :{ status : 'User Basic info updated.' } });
+                    }else{
+                        return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
+                    }
+                }
+        } catch (error) {
+                console.error(error);
+                res.status(401).json({msg: error});
+        }
+    });
+
+
 
     /**
      * Mypulse User Genaral Info api
@@ -629,8 +719,8 @@ var poolReplica = db.getConnectionReplica();
      * @apiParam        {Number} city_id
      * @apiParamExample {json} Request-Example:
      * {
-            "user_gender":"M",
-            "user_dob":"1992-12-30",
+            "gender":"M",
+            "dob":"1992-12-30",
             "address":"72 angavarpalaya",
             "user_profile_picture":"test",
             "country_id":1,
@@ -641,8 +731,8 @@ var poolReplica = db.getConnectionReplica();
      * @access Private
      * */
     router.post('/generalinfo',auth,[
-        check('user_dob').toDate(),
-        check('user_gender').isIn(['M', 'F','O'])
+        check('dob').toDate(),
+        check('gender').isIn(['M', 'F','O'])
     ], async (req,res) =>{ 
         const errors= validationResult(req);
         if(!errors.isEmpty()){
@@ -650,8 +740,8 @@ var poolReplica = db.getConnectionReplica();
             return res.status(400).json({errors : errors.array()});
         }
         let {
-            user_gender,
-            user_dob,
+            gender,
+            dob,
             address,
             user_profile_picture,
             country_id,
@@ -661,8 +751,8 @@ var poolReplica = db.getConnectionReplica();
          } = req.body;
          
 
-        user_gender = user_gender ? user_gender: null;
-        user_dob = user_dob ? user_dob: null;
+        gender = gender ? gender: null;
+        dob = dob ? dob: null;
         address = address ? address : null;
         user_profile_picture = user_profile_picture ? user_profile_picture : null;
         country_id = country_id ? country_id : null; 
@@ -670,24 +760,23 @@ var poolReplica = db.getConnectionReplica();
         district_id = district_id ? district_id : null; 
         city_id = city_id ? city_id : null;
 
-
         try {
              // Check if user exist
              let sql= pool.format(`
-             SELECT  id 
+             SELECT  user_id 
              FROM
-                 users
+                 users_info
              WHERE
-             id=? limit 1`,
+             user_id=? limit 1`,
              [ req.user.id]);
- 
+            
              let [rows ] = await pool.query(sql);
-
+             console.log(rows);
                  if(rows.length > 0){
                      // Update User Data
-                     [ rows ] = await pool.query(`update users SET
-                     user_gender =?,
-                     user_dob =?,
+                     let sql = pool.format(`update users_info SET
+                     gender =?,
+                     dob =?,
                      address =?,
                      user_profile_picture=?,
                      country_id =?,
@@ -696,10 +785,10 @@ var poolReplica = db.getConnectionReplica();
                      city_id =?,
                      modified_by=? ,
                      modified_at=now() 
-                     where id=? `, 
+                     where user_id=? `, 
                      [ 
-                        user_gender,
-                        user_dob,
+                        gender,
+                        dob,
                         address,
                         user_profile_picture,
                         country_id,
@@ -707,9 +796,10 @@ var poolReplica = db.getConnectionReplica();
                         district_id,
                         city_id,
                         req.user.id,
-                       req.user.id
+                        req.user.id
                      ]);
-                    //  console.log(rows);
+                     [ rows ] = await pool.query(sql);
+                      console.log(sql);
                      if(rows){
                          res.send({results : 'User general info Updated'});
                      }else{
