@@ -28,14 +28,21 @@ var poolReplica = db.getConnectionReplica();
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
-     * @apiParam        {String} user_role
-     * @apiParam        {String} first_name
-     * @apiParam        {String} last_name
-     * @apiParam        {String} user_email
-     * @apiParam        {String} user_mobile
-     * @apiParam        {String} hospital_id
-     * @apiParam        {String} status [1- Active. 0 - Inactive]
+     * @apiParam        {String} name hospital Name
+     * @apiParam        {String} email 
+     * @apiParam        {String} contact_number 
      * @apiParam        {String} address
+     * @apiParam        {String} description
+     * @apiParam        {String} md_name
+     * @apiParam        {String} md_contact_number
+     * @apiParam        {Number} city_id
+     * @apiParam        {Number} state_id
+     * @apiParam        {Number} district_id
+     * @apiParam        {Number} country_id
+     * @apiParam        {Number} license License ID
+     * @apiParam        {Number} license_status [0- inactive, 1- active]
+     * @apiParam        {String} from_date
+     * @apiParam        {String} till_date
      * @apiParamExample {json} Request-Example:
      *  {
             "name":"",
