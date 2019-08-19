@@ -425,10 +425,10 @@ var poolReplica = db.getConnectionReplica();
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/users/login User login
+     * @api 			{post} /api/users/login login for all the Users
      * @apiName 		Login a Mypulse User[ALL Users]
-     * @apiGroup 		User
-     * @apiDescription  Login with user_email , mobile and password and get a JWT token
+     * @apiGroup 		Login
+     * @apiDescription  Login with user_email/mobile and password and get a JWT token
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
