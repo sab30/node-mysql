@@ -38,21 +38,26 @@ var poolReplica = db.getConnectionReplica();
      * @apiParam        {String} address
      * @apiParamExample {json} Request-Example:
      *  {
-            "user_role":"HOSPITAL_ADMIN",
-            "first_name":"sabarish",
-            "last_name":"K",
-            "description":"test",
-            "user_email":"sabairh3012@gmail.com",
-            "user_mobile":"9797907098",
-            "hospital_id":"1", 
-            "status" : 1,
-            "address" : "213213"
+            "name":"",
+            "email":"",
+            "contact_number":"",
+            "address":"",
+            "description":"",
+            "md_name":"",
+            "md_contact_number":"",
+            "city_id":"",
+            "state_id":"",
+            "district_id":"",
+            "country_id":"",
+            "license":"",
+            "license_status":"",
+            "from_date":"",
+            "till_date":""
         }
      * @access Private
      * */
 
     router.post('/create',auth,[
-        check('user_role' , 'Role is required').not().isEmpty(),
         check('name' , 'name is required').not().isEmpty(),
         check('email' , 'email is required').not().isEmpty(),
         check('contact_number' , 'contact_number is required').not().isEmpty(),
@@ -76,7 +81,6 @@ var poolReplica = db.getConnectionReplica();
             return res.status(400).json({errors : errors.array()});
         }
         let {
-            user_role,
             name,
             email,
             contact_number,
@@ -142,16 +146,16 @@ var poolReplica = db.getConnectionReplica();
 
   
 /**
-     * Hospital Asmin Create with Basic info
+     * Hospital Admin Create with Basic info
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/hospital/create/admi Create or Register a Hospital Admin
+     * @api 			{post} /api/hospital/create/admin Register a Hospital Admin
      * @apiName 		Register a Hospital
      * @apiGroup 		Hospital
-     * @apiDescription  Create or Register a Hospital for all the Mypulse Roles ex: Super Admin
+     * @apiDescription  Create or Register a Hospital Admin
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
@@ -347,16 +351,16 @@ var poolReplica = db.getConnectionReplica();
     });
 
     /**
-     * Mypulse User Genaral Info api
+     * HA Genaral Info api
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/hospital/admin/generalinfo My pulse user Genaral info
-     * @apiName 		Mypulse User Genaral info 
-     * @apiGroup 		User
-     * @apiDescription  Mypulse User Genaral info insert or Update
+     * @api 			{post} /api/hospital/admin/generalinfo HA Genaral info
+     * @apiName 		HA Genaral info 
+     * @apiGroup 		Hospital
+     * @apiDescription  HA Genaral info insert or Update
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
@@ -466,16 +470,16 @@ var poolReplica = db.getConnectionReplica();
     });
 
     /**
-     * Mypulse User Genaral Info api
+     * HA Professional  Info api
      * 
      * @param {object} req The request object
      * @param {object} res The response object
      * @author Sabarish <sabarish3012@gmail.com>
      * 
-     * @api 			{post} /api/hospital/admin/generalinfo My pulse user Genaral info
-     * @apiName 		Mypulse User Genaral info 
-     * @apiGroup 		User
-     * @apiDescription  Mypulse User Genaral info insert or Update
+     * @api 			{post} /api/hospital/admin/generalinfo HA Professional info
+     * @apiName 		HA Professional  info 
+     * @apiGroup 		Hospital
+     * @apiDescription  HA Professional  info insert or Update
      * @apiPermission 	auth,JWT
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
