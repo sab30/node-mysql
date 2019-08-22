@@ -10,7 +10,7 @@ module.exports = function(req,res,next){
     //Check if no token 
     if(!token){
         // 401 not authorised
-        
+        res.status(401).json({msg: 'token is required'});
     }
 
     // Verify the token
@@ -24,7 +24,7 @@ module.exports = function(req,res,next){
 
         next();
     } catch (error) {
-        res.status(401).json({msg: 'token is not valid'});
+        res.status(401).json({msg: 'token is not valid or expired'});
     }
 
 }

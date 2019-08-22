@@ -42,7 +42,8 @@ var poolReplica = db.getConnectionReplica();
      * @access Private
      * */
 
-    router.put('/password',auth,[
+    router.put('/password',
+    auth,[
         check('current_password' , 'Please enter a password with 6 or more chrachters').isLength({
             min:6
         }),
@@ -92,97 +93,6 @@ var poolReplica = db.getConnectionReplica();
     });
 
 
-
-
-/**
-     * Reset or Change User Password
-     * 
-     * @param {object} req The request object
-     * @param {object} res The response object
-     * @author Sabarish <sabarish3012@gmail.com>
-     * 
-     * @api 			{put} /api/users/password Reset User Password
-     * @apiName 		Register a Mypulse User
-     * @apiGroup 		User
-     * @apiDescription  Update or change Pasword, 
-* @apiPermission 	auth,JWT
-     * @apiHeader       {String} Content-Type application/json
-     * @apiHeader       {String} x-auth-token JWT token from login API
-     * @apiHeader       {String} authorization The user’s JWT
-     * @apiParam        {String} current_password User Name
-     * @apiParam        {String} new_password Email for login in
-     * @apiParam        {String} confirm_password Users Password
-     * @apiParamExample {json} Request-Example:
-     * {
-        "current_password":"123456",
-        "new_password":"123456",
-        "confirm_password":"123456"
-        }
-     * @access Private
-     * */
-
-    router.put('/basicinfo',auth,[
-        check('first_name' , 'First Name is required').not().isEmpty(),
-    ], async (req,res) =>{
-        const errors= validationResult(req);
-        if(!errors.isEmpty()){
-            console.error(errors);
-            return res.status(400).json({errors : errors.array()});
-        }
-        try {
-            let [rows] = await poolReplica.query(`select id from users where
-            id=? limit 1`,
-            [ req.user.id ]);
-
-            let {
-                first_name,
-                last_name,
-                description
-            } = req.body;
-
-            if(rows.length > 0){
-                // Update Password if user exist
-
-                [rows ] = await pool.query(`update users_info SET 
-                first_name=?,
-                last_name=?,
-                description=?
-                modified_by=? ,
-                modified_at=now() 
-                where user_id=? `, 
-                [ new_password,req.user.id,req.user.id]);
-
-                if(rows){
-                    res.send({results :{ status : 'User Basic info updated.' } });
-                }else{
-                    return res.status(400).json({errors : [ { message : 'Unable to update'}]});
-                }
-
-            }else{
-                // Insert Basic info Details
-                let values = {
-                    first_name : first_name ? first_name: null,
-                    last_name : last_name ? last_name: null,
-                    description : description ? description: null,
-                    created_by: req.user.id
-                };
-    
-                let sql= pool.format(`insert into users_info SET ? `, values);
-                //console.log(sql);
-                [rows]= await pool.query(sql);
-                if(rows){
-                    res.send({results :{ status : 'User Basic info updated.' } });
-                }else{
-                    return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
-                }
-
-            }
-          } catch (e) {
-            console.error(e);
-            return res.status(500).json({errors : 'Internal server error'});
-          }
-    });
-
     /**
      * User Registration
      * 
@@ -198,7 +108,7 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
      * @apiHeader       {String} authorization The user’s JWT
-     * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,RECEPTIONIST,NURSE,MYPULSE_USER,MEDICAL_STORE,MEDICAL_LAB,HOSPITAL_ADMIN,DOCTOR] 
+     * @apiParam        {String} user_role Role of the user [SUPER_ADMIN,HOSPITAL_ADMIN,DOCTOR,RECEPTIONIST,NURSE,MYPULSE_USER] 
      * @apiParam        {String} first_name User Name
      * @apiParam        {String} user_email Email for login in
      * @apiParam        {String} user_password Users Password
@@ -218,7 +128,7 @@ var poolReplica = db.getConnectionReplica();
         check('user_role' , 'Role is required').not().isEmpty(),
         check('first_name' , 'Name is required').not().isEmpty(),
         check('user_email' , 'Please include a valid email').isEmail(),
-        check('user_password' , 'Please enter a password with 6 or more chrachters').isLength({
+        check('user_password' , 'Please enter a password with 6 or more chrachters').not().isEmpty().isLength({
             min:6
         }),
         check('user_mobile' , 'Enter mobile number').isLength({
@@ -245,15 +155,21 @@ var poolReplica = db.getConnectionReplica();
             // Check user already exists
 
             let rows = null;
-            [rows] =await poolReplica.query(`select id from users where user_email= ? or user_mobile= ? and user_password = ? limit 1`,[
+            [rows] =await poolReplica.query(`select id,user_email,user_mobile from users where user_email= ? or user_mobile= ? limit 1`,[
                 user_email,
-                user_mobile,
-                user_password
+                user_mobile
             ]) ;
 
             if(rows.length > 0){
                 // User already exists
-                return res.status(400).json({errors : [ { message : 'User already exist'}]});
+                console.log(rows);
+                let message= '';
+                if(rows[0].user_email){
+                    message= "User email already exist";
+                }else{
+                    message= "User mobile already exist";
+                }   
+                return res.status(400).json({errors : [ { message : message}]});
             }
 
 
@@ -413,7 +329,7 @@ var poolReplica = db.getConnectionReplica();
                 }
         } catch (error) {
             console.error(error);
-            res.status(401).json({msg: 'token is not valid'});
+            res.status(401).json({msg: 'token is not valid or expired'});
         }
         
     });
@@ -444,7 +360,7 @@ var poolReplica = db.getConnectionReplica();
      * */
 
     router.post('/login',[
-        check('user_email' , 'Please include a valid email').not().isEmpty().trim(),
+        check('user_email' , 'Please include a valid email').not().isEmpty(),
         check('user_password' , 'Please enter a password').isLength({ min: 6 })
     ], async (req,res) =>{ 
         // Validate error which takes a req object 
@@ -459,7 +375,7 @@ var poolReplica = db.getConnectionReplica();
         try {
             let sql= pool.format(`
             SELECT 
-                u.id, user_role, ur.role_id, r.role, r.role_code,u.status
+                u.id, user_role, ur.role_id, r.role, r.role_code,u.status, u.is_mobile_verified, u.is_email_verified
             FROM
                 users u
                     INNER JOIN
@@ -470,19 +386,34 @@ var poolReplica = db.getConnectionReplica();
             (user_email=? or user_mobile=?) and user_password=? limit 1`,
             [ user_email, user_email, md5(user_password + config.get('passwordHash'))]);
 
-            console.log(sql);
+            //console.log(sql);
 
             let [rows ] = await pool.query(sql);
 
                 if(rows.length > 0){
+
+                    // validations as per USER_ROLE
+                    switch (rows[0].user_role ) {
+                        case 'MYPULSE_USER': 
+                            if(rows[0].is_mobile_verified == 0){
+                                return res.status(400).json({errors : [ { message : 'Please verfiy your mobile number.'}]});
+                            }
+                        break;
+                        default:
+                            if(rows[0].is_email_verified == 0){
+                                return res.status(400).json({errors : [ { message : 'Please verfiy your email id.'}]});
+                            }
+                        break;
+                    }
+
                     const payload = {
                         user : rows[0]
                     }
-                    //get from config
+                    //get from config "10h" | 360000
                     jwt.sign(
                         payload, 
                         config.get('jwtSecret'),
-                        {expiresIn: 360000},
+                        {expiresIn: "1h"},
                         (err,token) => {
                             if (err) throw err;
                             res.json({token});
@@ -513,13 +444,13 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} Content-Type application/json
      * @apiHeader       {String} x-auth-token JWT token from login API
      * 
-     * @access Public
+     * @access Private
      * */
 
     router.get('/byid', auth ,async (req,res) =>{ 
         // Validate error which takes a req object 
         try {
-            let [rows ] = await poolReplica.query(`SELECT * from get_mypulse_users WHERE user_id=? limit 1`,[ req.user.id]);
+            let [rows ] = await poolReplica.query(`SELECT * from vw_users WHERE id=? limit 1`,[ req.user.id]);
                 if(rows.length > 0){
                     res.send(rows[0]);
                 }else{
@@ -617,97 +548,6 @@ var poolReplica = db.getConnectionReplica();
                 res.status(401).json({msg: error});
         }
     });
-
-
-     /**
-     * Create/Update Mypulse User general Info
-     * 
-     * @param {object} req The request object
-     * @param {object} res The response object
-     * @author Sabarish <sabarish3012@gmail.com>
-     * 
-     * @api 			{post} /api/users/generalinfo My pulse user general info
-     * @apiName 		Mypulse User general info 
-     * @apiGroup 		User
-     * @apiDescription  Mypulse User general info insert or Update
-     * @apiPermission 	auth,JWT
-     * @apiHeader       {String} Content-Type application/json
-     * @apiHeader       {String} x-auth-token JWT token from login API
-     * 
-     * @apiParam        {String} first_name Mandatory 
-     * @apiParam        {String} last_name
-     * @apiParam        {String} description
-     * @apiParamExample {json} Request-Example:
-     * {
-            "gender": "sabarish",
-            "dob":"K",
-            "address":"mypukse users"
-            "user_profile_picture":"mypukse users",
-        }         
-     *
-     * @access Private
-     * */
-    router.post('/basicinfo',auth,[
-        check('first_name' , 'Please fill in first name').not().isEmpty(),
-    ], async (req,res) =>{ 
-        const errors= validationResult(req);
-        if(!errors.isEmpty()){
-            console.error(errors);
-            return res.status(400).json({errors : errors.array()});
-        }
-        let {first_name,last_name,description } = req.body;
-        try {
-             // Check if user exist
-             let sql= pool.format(`
-             SELECT  id 
-             FROM
-                 users_info
-             WHERE
-             user_id=? limit 1`,
-             [ req.user.id]);
- 
-             let [rows ] = await pool.query(sql);
- 
-                 if(rows.length > 0){
-                     // Update User Data
-                     [ rows ] = await pool.query(`update users_info SET
-                     first_name=?,
-                     last_name=?,
-                     description=?,
-                     modified_by=? ,
-                     modified_at=now() 
-                     where user_id=? `, 
-                     [ first_name,last_name,description,req.user.id, req.user.id
-                     ]);
-
-                     if(rows){
-                         res.send({results : 'User basic info Updated'});
-                     }else{
-                         return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
-                     }
-                }else{
-                    let values= {
-                        user_id : req.user.id,
-                        first_name : first_name ,
-                        last_name : last_name ? last_name : null ,
-                        description : description ? description : null,
-                        created_by :  req.user.id
-                    }
-                    let sql= pool.format(`insert into users_info SET ? `, values);
-                //console.log(sql);
-                    [rows]= await pool.query(sql);
-                    if(rows){
-                        res.send({results :{ status : 'User Basic info updated.' } });
-                    }else{
-                        return res.status(400).json({errors : [ { message : 'Unable to Update'}]});
-                    }
-                }
-        } catch (error) {
-                console.error(error);
-                res.status(401).json({msg: error});
-        }
-    });
-
 
 
     /**
@@ -846,9 +686,8 @@ var poolReplica = db.getConnectionReplica();
      * @apiHeader       {String} x-auth-token JWT token from login API
      * 
      * @apiParam        {String} patient_type
+     * @apiParam        {String} blood_group
      * @apiParam        {String} in_time
-     * @apiParam        {String} account_opening_timestamp
-     * @apiParam        {String} aadhar
      * @apiParam        {Float} height
      * @apiParam        {Float} weight
      * @apiParam        {Float} blood_pressure

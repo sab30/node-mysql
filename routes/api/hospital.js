@@ -5,7 +5,6 @@ const router = express.Router();
 const config = require('config');
 const {check, validationResult} = require('express-validator');
 const jwt = require('jsonwebtoken');
-var md5 = require('md5');
 const auth = require('../../middleware/auth');
 //https://github.com/sidorares/node-mysql2/blob/master/examples/promise-co-await/await.js
 var db = require('../../config/db');
@@ -116,7 +115,7 @@ var poolReplica = db.getConnectionReplica();
             const UtilsService = require('./services/UtilsService');
             let year = moment().format('YY');
             let nextUniqueId = UtilsService.getNextUniqueId(user_unique_id);
-            user_unique_id = config.get('uniqueCodePrefix')[user_role] + year +"_" + nextUniqueId;
+            user_unique_id = config.get('uniqueCodePrefix')['HOSPITAL'] + year +"_" + nextUniqueId;
             // Create hospital
             let values = {
                 user_unique_id : user_unique_id,
