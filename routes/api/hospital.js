@@ -11,7 +11,48 @@ var db = require('../../config/db');
 const moment = require('moment');
 var pool = db.getConnection();
 var poolReplica = db.getConnectionReplica();
+const UtilsService = require('./services/UtilsService');
 
+/**
+     * Get all hospitals
+     * 
+     * @param {object} req The request object
+     * @param {object} res The response object
+     * @author Sabarish <sabarish3012@gmail.com>
+     * 
+     * @api 			{get} /api/hospital?page=0 Hospital list , Limit 0,1,2,3,4 etc
+     * @apiName 		Get Current User details
+     * @apiGroup 		Hospital
+     * @apiDescription  Get All hospitals
+     * @apiPermission 	auth,JWT
+     * @apiHeader       {String} Content-Type application/json
+     * @apiHeader       {String} x-auth-token JWT token from login API
+     * 
+     * @access Private
+     * */
+
+    router.get('/:page', auth ,[
+        check('page' , 'page or limit is required').isNumeric()
+    ],async (req,res) =>{
+        const errors= validationResult(req);
+        if(!errors.isEmpty()){
+            console.error('errors');
+            return res.status(400).json({errors : errors.array()});
+        }
+        let limit = req.params.page ? req.params.page : 0;
+        let obj = UtilsService.pagination(limit, config.get('paginationLimit'));
+        try {
+            let [rows ] = await poolReplica.query(`SELECT * from vw_hositals order by created_at desc limit ?,?`,
+                [ obj.start, obj.end ]);
+                if(rows.length > 0){
+                    res.send(rows);
+                }else{
+                    return res.status(400).json({errors : [ { message : 'User dosen`t exist'}]});
+                }
+        } catch (error) {
+            res.status(401).json({msg: error});
+        }
+    });
 
 /**
      * Hospital Registration

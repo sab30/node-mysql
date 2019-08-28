@@ -44,13 +44,13 @@ var poolReplica = db.getConnectionReplica();
 
     router.put('/password',
     auth,[
-        check('current_password' , 'Please enter a password with 6 or more chrachters').isLength({
+        check('current_password' , 'Please enter a current_password with 6 or more chrachters').isLength({
             min:6
         }),
-        check('new_password' , 'Please enter a new password').isLength({
+        check('new_password' , 'Please enter a new password with 6 or more chrachters').isLength({
             min:6
         }),
-        check('confirm_password' , 'Please enter a password with 6 or more chrachters for confirm password').isLength({
+        check('confirm_password' , 'Please enter confirm password with 6 or more chrachters').isLength({
             min:6
         })
     ], async (req,res) =>{

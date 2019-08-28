@@ -27,6 +27,17 @@ module.exports = {
         return OTP;
     },
 
+    pagination: function(limit, paginationLimit) {
+        let limitObj=null;
+        if(limit== 0){
+            limitObj = { start : 0 , end : paginationLimit}
+        }
+        else{
+            limitObj=  { start : limit * paginationLimit , paginationLimit}
+        }
+        return limitObj;
+    },
+
     getNextUniqueId(unique){
         let max = '100000';
         if(unique < 10 ){

@@ -59,5 +59,6 @@
         "HOSPITAL":"MPH"
     },
    "uniqueStartNumber": 100000,
-   "jwtSecret": "myPuLsEsecrettoken"
+   "jwtSecret": "myPuLsEsecrettoken",
+   "paginationLimit" : 10
 }
